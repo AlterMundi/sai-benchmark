@@ -1,0 +1,6 @@
+datasets
+ollama
+Pillow
+pandas
+scikit-learn
+tqdm
