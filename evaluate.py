@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Qwen 2.5-VL Early-Fire Detection Benchmark
-Main evaluation pipeline for wildfire image sequences.
+Multi-Model Vision Benchmark for Early-Fire Detection
+Main evaluation pipeline supporting multiple vision-language models.
 """
 
 import argparse
@@ -10,17 +10,25 @@ import logging
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple, Optional, Union
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 import sys
 
 from tqdm import tqdm
 
-# Import model wrappers
+# Import new multi-model architecture
 try:
-    from models.ollama_qwen import infer as ollama_infer, check_connection as ollama_check
-    from models.hf_qwen import infer as hf_infer, check_gpu_available as hf_check_gpu
+    from models import (
+        ModelFactory, get_model_config, list_available_models,
+        VisionModel, ModelConfig
+    )
+    from models.discovery import (
+        discover_vision_models, auto_select_models, 
+        validate_model_availability, print_discovery_report
+    )
+    # Legacy imports for backward compatibility
+    from models import ollama_infer, ollama_check, hf_infer, hf_check_gpu
 except ImportError as e:
     print(f"Error importing models: {e}")
     print("Make sure to install dependencies: pip install -r requirements.txt")
@@ -42,22 +50,51 @@ class SequenceResult:
 class BenchmarkConfig:
     """Configuration for benchmark execution."""
     dataset_path: Path
-    engine: str  # 'ollama', 'hf', or 'both'
+    models: List[str]  # List of model names to evaluate
     output_path: Path
     max_workers: int = 4
     temperature: float = 0.1
     fps_sampling: int = 1  # Process every N frames
     max_images_per_seq: int = 50
     iou_threshold: float = 0.4
+    
+    # Legacy support
+    engine: str = "ollama"  # For backward compatibility
 
 
 class WildfireEvaluator:
-    """Main evaluator for wildfire detection using Qwen 2.5-VL."""
+    """Main evaluator for wildfire detection using multiple vision models."""
     
     def __init__(self, config: BenchmarkConfig):
         self.config = config
         self.results = []
+        self.models = {}  # Cache for model instances
         self.setup_logging()
+        self._initialize_models()
+        
+    def _initialize_models(self):
+        """Initialize model instances for the specified models."""
+        self.logger.info(f"Initializing {len(self.config.models)} models...")
+        
+        for model_name in self.config.models:
+            try:
+                model_config = get_model_config(model_name)
+                model_instance = ModelFactory.create(model_config)
+                
+                # Check availability
+                if model_instance.check_availability():
+                    self.models[model_name] = model_instance
+                    self.logger.info(f"✓ Initialized: {model_config.display_name}")
+                else:
+                    self.logger.warning(f"✗ Model not available: {model_config.display_name}")
+                    
+            except Exception as e:
+                self.logger.error(f"Failed to initialize {model_name}: {e}")
+        
+        if not self.models:
+            raise RuntimeError("No models available for evaluation")
+        
+        self.logger.info(f"Successfully initialized {len(self.models)} models")
         
     def setup_logging(self):
         """Configure logging."""
@@ -142,24 +179,20 @@ class WildfireEvaluator:
             
         return sampled
         
-    def run_inference(self, image_path: Path, engine: str) -> Dict:
-        """Run inference on a single image using specified engine."""
+    def run_inference(self, image_path: Path, model_name: str) -> Dict:
+        """Run inference on a single image using specified model."""
         try:
-            if engine == 'ollama':
-                return ollama_infer(image_path, temperature=self.config.temperature)
-            elif engine == 'hf':
-                return hf_infer(image_path, temperature=self.config.temperature)
-            else:
-                raise ValueError(f"Unknown engine: {engine}")
+            model = self.models[model_name]
+            return model.infer(image_path, temperature=self.config.temperature)
         except Exception as e:
-            self.logger.error(f"Inference failed for {image_path} with {engine}: {e}")
+            self.logger.error(f"Inference failed for {image_path} with {model_name}: {e}")
             return {
                 "has_smoke": False,
                 "bbox": [0, 0, 0, 0],
                 "error": str(e)
             }
             
-    def process_sequence(self, sequence_dir: Path, engine: str) -> SequenceResult:
+    def process_sequence(self, sequence_dir: Path, model_name: str) -> SequenceResult:
         """Process a single image sequence."""
         start_time = time.time()
         
@@ -204,7 +237,7 @@ class WildfireEvaluator:
         
         with tqdm(sampled_images, desc=f"Processing {sequence_dir.name}", leave=False) as pbar:
             for img_path in pbar:
-                pred = self.run_inference(img_path, engine)
+                pred = self.run_inference(img_path, model_name)
                 pred['image_path'] = str(img_path)
                 predictions.append(pred)
                 
@@ -276,61 +309,46 @@ class WildfireEvaluator:
         score = accuracy + early_bonus
         return max(0, min(1, score))
         
-    def check_backends(self) -> Dict[str, bool]:
-        """Check availability of inference backends."""
-        backends = {}
+    def check_models(self) -> Dict[str, bool]:
+        """Check availability of configured models."""
+        model_status = {}
         
-        # Check Ollama
-        backends['ollama'] = ollama_check()
-        if not backends['ollama']:
-            self.logger.warning("Ollama backend not available")
+        for model_name, model_instance in self.models.items():
+            model_status[model_name] = model_instance.check_availability()
             
-        # Check HuggingFace
-        backends['hf'] = hf_check_gpu()
-        if not backends['hf']:
-            self.logger.warning("HuggingFace GPU backend not available")
-            
-        return backends
+        return model_status
         
     def run_evaluation(self) -> Dict:
         """Run the complete evaluation pipeline."""
-        self.logger.info("Starting Qwen 2.5-VL Early-Fire Detection Benchmark")
+        self.logger.info("Starting Multi-Model Vision Benchmark for Early-Fire Detection")
         
-        # Check backends
-        backends = self.check_backends()
+        # Check model availability
+        model_status = self.check_models()
+        available_models = [name for name, available in model_status.items() if available]
         
-        engines_to_test = []
-        if self.config.engine == 'both':
-            if backends['ollama']:
-                engines_to_test.append('ollama')
-            if backends['hf']:
-                engines_to_test.append('hf')
-        else:
-            if self.config.engine in backends and backends[self.config.engine]:
-                engines_to_test.append(self.config.engine)
-            else:
-                raise ValueError(f"Backend {self.config.engine} not available")
-                
-        if not engines_to_test:
-            raise ValueError("No backends available")
+        if not available_models:
+            raise ValueError("No models available for evaluation")
+            
+        self.logger.info(f"Evaluating with {len(available_models)} models: {available_models}")
             
         # Discover sequences
         sequences = self.discover_sequences()
         
-        # Process all sequences with all engines
+        # Process all sequences with all models
         all_results = {}
         
-        for engine in engines_to_test:
-            self.logger.info(f"Running evaluation with {engine} backend")
-            engine_results = []
+        for model_name in available_models:
+            model_config = get_model_config(model_name)
+            self.logger.info(f"Running evaluation with {model_config.display_name}")
+            model_results = []
             
-            with tqdm(sequences, desc=f"Sequences ({engine})") as pbar:
+            with tqdm(sequences, desc=f"Sequences ({model_config.display_name})") as pbar:
                 for seq_dir in pbar:
-                    pbar.set_description(f"Processing {seq_dir.name} ({engine})")
-                    result = self.process_sequence(seq_dir, engine)
-                    engine_results.append(result)
+                    pbar.set_description(f"Processing {seq_dir.name} ({model_name})")
+                    result = self.process_sequence(seq_dir, model_name)
+                    model_results.append(result)
                     
-            all_results[engine] = engine_results
+            all_results[model_name] = model_results
             
         # Generate summary
         summary = self.generate_summary(all_results)
@@ -348,7 +366,7 @@ class WildfireEvaluator:
         """Generate benchmark summary statistics."""
         summary = {}
         
-        for engine, results in all_results.items():
+        for model_name, results in all_results.items():
             if not results:
                 continue
                 
@@ -384,7 +402,7 @@ class WildfireEvaluator:
             f1_score = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
             accuracy = (true_positives + true_negatives) / (true_positives + false_positives + true_negatives + false_negatives) if (true_positives + false_positives + true_negatives + false_negatives) > 0 else 0
             
-            summary[engine] = {
+            summary[model_name] = {
                 'total_sequences': len(results),
                 'total_images': total_images,
                 'total_time_seconds': total_time,
@@ -405,14 +423,14 @@ class WildfireEvaluator:
     def save_results(self, all_results: Dict, summary: Dict):
         """Save results to JSON file."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_file = self.config.output_path / f"qwen_evaluation_{timestamp}.json"
+        output_file = self.config.output_path / f"multi_model_evaluation_{timestamp}.json"
         
         # Convert results to serializable format
         serializable_results = {}
-        for engine, results in all_results.items():
-            serializable_results[engine] = []
+        for model_name, results in all_results.items():
+            serializable_results[model_name] = []
             for result in results:
-                serializable_results[engine].append({
+                serializable_results[model_name].append({
                     'sequence_name': result.sequence_name,
                     'total_images': result.total_images,
                     'predictions': result.predictions,
@@ -425,7 +443,7 @@ class WildfireEvaluator:
             'timestamp': timestamp,
             'config': {
                 'dataset_path': str(self.config.dataset_path),
-                'engine': self.config.engine,
+                'models': self.config.models,
                 'max_workers': self.config.max_workers,
                 'temperature': self.config.temperature,
                 'fps_sampling': self.config.fps_sampling,
@@ -443,11 +461,15 @@ class WildfireEvaluator:
         
         # Print summary to console
         print("\n" + "="*60)
-        print("BENCHMARK SUMMARY")
+        print("MULTI-MODEL BENCHMARK SUMMARY")
         print("="*60)
         
-        for engine, stats in summary.items():
-            print(f"\n{engine.upper()} Backend:")
+        # Sort models by Early-Fire Score for ranking
+        ranked_models = sorted(summary.items(), key=lambda x: x[1]['avg_early_fire_score'], reverse=True)
+        
+        for rank, (model_name, stats) in enumerate(ranked_models, 1):
+            model_config = get_model_config(model_name)
+            print(f"\n#{rank} {model_config.display_name}")
             print(f"  Sequences: {stats['total_sequences']}")
             print(f"  Images: {stats['total_images']}")
             print(f"  Time: {stats['total_time_seconds']:.1f}s")
@@ -457,13 +479,42 @@ class WildfireEvaluator:
             print(f"  Recall: {stats['recall']:.3f}")
             print(f"  F1-Score: {stats['f1_score']:.3f}")
             print(f"  Accuracy: {stats['accuracy']:.3f}")
+            
+        # Print comparative analysis
+        if len(ranked_models) > 1:
+            print(f"\n🏆 COMPARATIVE ANALYSIS")
+            print("-" * 40)
+            best_model = ranked_models[0]
+            print(f"Best Overall: {get_model_config(best_model[0]).display_name} (EFS: {best_model[1]['avg_early_fire_score']:.3f})")
+            
+            # Find fastest model
+            fastest_model = min(ranked_models, key=lambda x: x[1]['avg_time_per_image'])
+            print(f"Fastest: {get_model_config(fastest_model[0]).display_name} ({fastest_model[1]['avg_time_per_image']:.2f}s/img)")
+            
+            # Find most accurate
+            most_accurate = max(ranked_models, key=lambda x: x[1]['accuracy'])
+            print(f"Most Accurate: {get_model_config(most_accurate[0]).display_name} ({most_accurate[1]['accuracy']:.3f})")
+
+
+def parse_models(models_arg: str) -> List[str]:
+    """Parse models argument into list of model names."""
+    if models_arg.startswith("auto:"):
+        criteria = models_arg[5:]  # Remove "auto:" prefix
+        return auto_select_models(criteria)
+    elif models_arg == "discover":
+        print_discovery_report()
+        sys.exit(0)
+    elif "," in models_arg:
+        return [model.strip() for model in models_arg.split(",")]
+    else:
+        return [models_arg]
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Qwen 2.5-VL Early-Fire Detection Benchmark")
+    parser = argparse.ArgumentParser(description="Multi-Model Vision Benchmark for Early-Fire Detection")
     parser.add_argument("--dataset", default="~/sequences", help="Path to image sequences dataset")
-    parser.add_argument("--engine", choices=['ollama', 'hf', 'both'], default='ollama', 
-                       help="Inference engine to use")
+    parser.add_argument("--models", default="qwen2.5vl-7b", 
+                       help="Models to evaluate. Options: model_name, model1,model2, auto:balanced, auto:fast, auto:accurate, discover")
     parser.add_argument("--output", default="./out", help="Output directory for results")
     parser.add_argument("--workers", type=int, default=4, help="Number of worker threads")
     parser.add_argument("--temperature", type=float, default=0.1, help="Model temperature")
@@ -471,18 +522,37 @@ def main():
     parser.add_argument("--max-images", type=int, default=50, help="Max images per sequence")
     parser.add_argument("--iou-threshold", type=float, default=0.4, help="IOU threshold for bbox evaluation")
     
+    # Legacy support
+    parser.add_argument("--engine", choices=['ollama', 'hf', 'both'], default='ollama', 
+                       help="Legacy: Inference engine (for backward compatibility)")
+    
     args = parser.parse_args()
+    
+    # Parse models
+    try:
+        models = parse_models(args.models)
+        models = validate_model_availability(models)
+        
+        if not models:
+            print("❌ No valid models specified or available.")
+            print("Use --models discover to see available models.")
+            return 1
+            
+    except Exception as e:
+        print(f"Error parsing models: {e}")
+        return 1
     
     # Create config
     config = BenchmarkConfig(
         dataset_path=Path(args.dataset).expanduser(),
-        engine=args.engine,
+        models=models,
         output_path=Path(args.output),
         max_workers=args.workers,
         temperature=args.temperature,
         fps_sampling=args.fps_sampling,
         max_images_per_seq=args.max_images,
-        iou_threshold=args.iou_threshold
+        iou_threshold=args.iou_threshold,
+        engine=args.engine  # Legacy support
     )
     
     # Create output directory
