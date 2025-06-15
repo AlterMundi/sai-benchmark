@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-SAI-Benchmark has evolved from a smoke/fire detection benchmark to a comprehensive Multi-Dimensional Vision Assessment (MDVA) framework. The repository contains both legacy smoke detection tests and a new synthesized approach for definitively testing LLM vision capabilities across multiple dimensions.
+SAI-Benchmark is transitioning to focus exclusively on **Qwen 2.5-VL** for early-fire detection benchmarking. The project now supports dual execution paths: local inference via Ollama and cloud/GPU inference via Hugging Face Transformers. This pivot leverages Qwen 2.5-VL's native dynamic resolution capabilities and window attention mechanisms for improved smoke/fire detection performance.
 
 ## Commands
 
@@ -13,56 +13,80 @@ SAI-Benchmark has evolved from a smoke/fire detection benchmark to a comprehensi
 # Install dependencies
 pip3 install -r requirements.txt
 
-# Ensure Ollama is running locally
+# For Ollama path
+ollama pull qwen2.5-vl:7b
 ollama serve
+
+# For Hugging Face path
+pip3 install transformers accelerate qwen-vl-utils
+# Optional: Set cache directory
+export HF_HOME=/mnt/models
 ```
 
 ### Running Benchmarks
 
-#### Legacy Smoke Detection Tests
+#### Qwen 2.5-VL Early-Fire Detection
 ```bash
-# Run smoke detection on a single sequence
+# Run with Ollama backend
+python3 evaluate.py --engine ollama --dataset <dataset_path>
+
+# Run with Hugging Face backend
+python3 evaluate.py --engine hf --dataset <dataset_path>
+
+# Compare both backends
+python3 evaluate.py --engine both --dataset <dataset_path>
+```
+
+#### Legacy Tests (for reference)
+```bash
+# Old smoke detection pipeline
 python3 tests/test_server_base.py --sequence_folder <path_to_sequence> --model <model_name>
 
-# Run parallel benchmark on multiple sequences
+# Old parallel benchmark
 python3 tests/benchmark-06.py --dataset <dataset_path> --model <model_name> --workers <num_workers>
 ```
 
-#### New MDVA Framework
-```bash
-# Run comprehensive vision benchmark
-python3 vision_benchmark_prototype.py --model <model_name> --output results.json
-
-# Run single test demonstration
-python3 example_benchmark_run.py single
-
-# Run model comparison
-python3 example_benchmark_run.py compare
-```
-
 ### Common Arguments
-- `--model`: Ollama model name (e.g., "gemma-2b", "llama3.1")
-- `--temperature`: Model temperature (0.0-1.0)
-- `--max_images`: Maximum images per sequence
-- `--resize`: Target resolution for image resizing
-- `--workers`: Number of parallel workers
+- `--engine`: Backend to use ("ollama", "hf", or "both")
+- `--dataset`: Path to dataset directory
+- `--max_tokens`: Maximum visual tokens (256-1280 recommended for Qwen 2.5-VL)
+- `--iou_threshold`: IOU threshold for bbox evaluation (default 0.4)
+- `--fps_sampling`: Frame sampling rate for sequences
 
 ## Architecture
 
-### New MDVA Framework (vision_benchmark_prototype.py)
+### Qwen 2.5-VL Integration Architecture
 
-The Multi-Dimensional Vision Assessment framework tests LLM vision capabilities across four levels:
+```
+          +------------------+
+          | benchmark runner |
+          +--------+---------+
+                   |
+         ┌─────────┴─────────┐
+         |                   |
++---------v------+   +--------v---------+
+|  local Ollama  |   |  HF Transformers |
+|  (HTTP API)    |   |  (Python)        |
++---------+------+   +--------+---------+
+         |                   |
+   qwen2.5-vl:7b     Qwen2.5-VL-7B-Instruct
+```
 
-1. **Basic Perception** (0-25): Colors, shapes, counting, object presence
-2. **Spatial Understanding** (26-50): Relative positions, depth, motion, composition
-3. **Semantic Understanding** (51-75): Object relationships, scene context, activities
-4. **Abstract Reasoning** (76-100): Emotional content, symbolism, narratives
+### Key Components
 
-Key classes:
-- `VisionBenchmark`: Main orchestrator
-- `TestCase`: Individual test structure
-- `VisionTest`: Abstract base for test categories
-- `PerceptionTest`, `SpatialTest`: Concrete implementations
+1. **Model Wrappers** (`models/`):
+   - `ollama_qwen.py`: HTTP-based interface for local Ollama inference
+   - `hf_qwen.py`: Direct Transformers integration for GPU inference
+
+2. **Evaluation Pipeline** (`evaluate.py`):
+   - Unified interface for both backends
+   - Handles image preprocessing and dynamic resolution
+   - Enforces JSON output schema for smoke detection
+
+3. **Benchmark Adjustments**:
+   - Dynamic FPS sampling for long sequences (>1280 visual tokens)
+   - IOU threshold relaxed to 0.4 for ViT-14 spatial granularity
+   - Latency normalization based on backend (Ollama: 0.8-1.2s, HF: 0.25s)
 
 ### Legacy Components
 
@@ -92,9 +116,39 @@ Key classes:
 
 ## Important Notes
 
-- The system expects Ollama to be running locally on default port
+- Qwen 2.5-VL requires specific handling for its dynamic resolution system
+- Ollama backend uses quantized GGUF models (int4) for CPU inference
+- HF backend requires GPU with 16-24GB VRAM for 7B model
+- JSON output schema: `{"has_smoke": bool, "bbox": [x_center, y_center, width, height]}`
+- If JSON parsing fails, implement fallback with "BAD_JSON" detection
 - Results are saved as JSON files in the `out/` directory
-- Spanish comments in some files indicate international development
-- The `old/` directory contains previous iterations for reference
-- See `vision_test_synthesis.md` for detailed design rationale and framework evolution
-- The new MDVA framework in `vision_benchmark_prototype.py` represents a comprehensive approach to LLM vision testing
+
+## Permissions and Tools
+
+### Git Operations
+Claude has permission to:
+- Create branches: `git checkout -b feature/branch-name`
+- Stage changes: `git add -A` or `git add specific-file`
+- Commit with descriptive messages: `git commit -m "feat: description"`
+- View logs: `git log --oneline -n 10`
+- Check status: `git status`
+- View diffs: `git diff` or `git diff --staged`
+- Stash changes: `git stash` / `git stash pop`
+
+### VSCode Integration
+Claude can execute VSCode commands:
+- Open files: `code filename.py`
+- Open folders: `code .`
+- Install extensions: `code --install-extension ms-python.python`
+- List extensions: `code --list-extensions`
+
+### Useful Bash Commands
+Claude is authorized to use:
+- System monitoring: `htop`, `df -h`, `free -h`, `ps aux`
+- File operations: `find`, `grep`, `sed`, `awk`, `sort`, `uniq`
+- Network tools: `curl`, `wget`, `netstat`, `ss`
+- Process management: `kill`, `killall`, `pgrep`, `pkill`
+- Archive operations: `tar`, `zip`, `unzip`, `gzip`
+- Performance tools: `time`, `watch`, `timeout`
+- Python tools: `pip`, `python3`, `pytest`, `black`, `ruff`
+- Docker: `docker ps`, `docker logs`, `docker exec`
