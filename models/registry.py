@@ -90,7 +90,7 @@ MODEL_CONFIGS = {
     "llama3.2-vision": ModelConfig(
         name="llama3.2-vision",
         display_name="LLaMA 3.2 Vision 11B",
-        model_id="llama3.2-vision:11b-instruct-q8_0",
+        model_id="llama3.2-vision:latest",
         prompt_template="llama_format",
         temperature=0.1,
         max_tokens=2048,
