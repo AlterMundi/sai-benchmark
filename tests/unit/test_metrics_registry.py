@@ -294,7 +294,7 @@ class TestMetricsRegistry:
         # Test perfect overlap
         bbox1 = [0.5, 0.5, 0.2, 0.2]
         iou = populated_registry._compute_iou(bbox1, bbox1)
-        assert iou == 1.0
+        assert abs(iou - 1.0) < 1e-10  # Use approximate equality for floating point
         
         # Test no overlap
         bbox2 = [0.9, 0.9, 0.1, 0.1]
@@ -339,8 +339,8 @@ class TestMetricsRegistry:
         
         aggregated = populated_registry.aggregate_results(results_list, "mean")
         
-        assert aggregated["accuracy"].value == 0.85
-        assert aggregated["precision"].value == 0.75
+        assert abs(aggregated["accuracy"].value - 0.85) < 1e-10
+        assert abs(aggregated["precision"].value - 0.75) < 1e-10
         assert aggregated["accuracy"].details["num_samples"] == 3
         assert "std" in aggregated["accuracy"].details
     

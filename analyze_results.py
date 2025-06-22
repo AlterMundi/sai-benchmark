@@ -558,8 +558,10 @@ def output_text_report(report: Dict[str, Any], output_dir: str = None):
         for comp in report.get('comparisons', []):
             lines.append(f"{comp['suite1']} vs {comp['suite2']}")
             summary = comp.get('summary', {})
-            lines.append(f"  {comp['suite1']} wins: {summary.get(f\"{comp['suite1']}_wins\", 0)}")
-            lines.append(f"  {comp['suite2']} wins: {summary.get(f\"{comp['suite2']}_wins\", 0)}")
+            suite1_wins_key = f"{comp['suite1']}_wins"
+            suite2_wins_key = f"{comp['suite2']}_wins"
+            lines.append(f"  {comp['suite1']} wins: {summary.get(suite1_wins_key, 0)}")
+            lines.append(f"  {comp['suite2']} wins: {summary.get(suite2_wins_key, 0)}")
             lines.append(f"  Ties: {summary.get('ties', 0)}")
             lines.append("")
     
