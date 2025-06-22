@@ -15,3 +15,13 @@ qwen-vl-utils
 
 # Optional GPU acceleration
 # bitsandbytes  # Uncomment for memory-efficient inference
+
+# Testing dependencies
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-mock>=3.11.0
+pytest-asyncio>=0.21.0
+pytest-timeout>=2.1.0
+pytest-xdist>=3.3.0  # For parallel test execution
+hypothesis>=6.82.0  # For property-based testing
+faker>=19.2.0  # For generating test data
