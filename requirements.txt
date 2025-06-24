@@ -1,6 +1,6 @@
 # Core dependencies
 datasets
-ollama
+ollama  # Python client for Ollama API (Ollama server must be installed separately)
 Pillow
 pandas
 scikit-learn

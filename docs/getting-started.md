@@ -39,13 +39,20 @@ python validate_tests.py
 pytest tests/unit/ -v
 ```
 
-### 3. Set Up Your First Model Backend
+### 3. Prerequisites
+
+Before setting up model backends, ensure you have the required external dependencies:
+
+- **Ollama** (for local inference): Must be installed separately from [ollama.ai](https://ollama.ai/download)
+- **NVIDIA drivers** (for GPU acceleration): Required for CUDA-enabled models
+
+### 4. Set Up Your First Model Backend
 
 Choose one of the following backends:
 
 #### Option A: Ollama (Local, CPU/GPU)
 ```bash
-# Install and start Ollama
+# Assuming Ollama is already installed (see Prerequisites above)
 ollama pull qwen2.5-vl:7b
 ollama serve
 ```

@@ -3,6 +3,9 @@ Ollama Engine Implementation
 
 Interface for Ollama API supporting local inference of vision-language models.
 Handles HTTP communication, image encoding, and response parsing.
+
+Note: Ollama must be installed separately from https://ollama.ai
+This engine provides the API client interface only.
 """
 
 import requests
@@ -39,7 +42,7 @@ class OllamaEngine(BaseEngine):
                 raise ValueError(f"Model '{self.model_id}' not found in Ollama. Available models: {model_names}")
                 
         except requests.exceptions.ConnectionError:
-            raise ConnectionError(f"Cannot connect to Ollama at {self.base_url}. Make sure Ollama is running.")
+            raise ConnectionError(f"Cannot connect to Ollama at {self.base_url}. Make sure Ollama is installed and running (see https://ollama.ai).")
         except requests.exceptions.RequestException as e:
             raise RuntimeError(f"Failed to initialize Ollama engine: {e}")
     

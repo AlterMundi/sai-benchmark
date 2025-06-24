@@ -188,6 +188,10 @@ pytest -m "not slow"        # Exclude slow tests
 - macOS 12.0+
 - Windows 10/11 (WSL2 recommended)
 
+### External Dependencies
+- **Ollama**: Required for local model inference. Must be installed separately - see [Ollama installation guide](https://ollama.ai/download)
+- **NVIDIA drivers**: Required for GPU acceleration (when using CUDA models)
+
 ## 🤝 Contributing
 
 We welcome contributions! Please see our [Contributing Guide](docs/contributing/contributing.md) for details.

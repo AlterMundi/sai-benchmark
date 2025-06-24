@@ -41,7 +41,7 @@ class EngineRegistry:
     def _register_builtin_engines(self):
         """Register built-in engine configurations"""
         
-        # Ollama Engine
+        # Ollama Engine (requires external Ollama installation)
         from engines.ollama_engine import OllamaEngine
         self.register_engine(EngineConfig(
             engine_type=EngineType.OLLAMA,
