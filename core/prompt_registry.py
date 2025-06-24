@@ -165,6 +165,9 @@ class PromptRegistry:
         
         # Model-specific format templates
         self._register_model_specific_prompts()
+        
+        # Vision capability testing prompts
+        self._register_vision_capability_prompts()
     
     def _register_model_specific_prompts(self):
         """Register model-specific prompt variations"""
@@ -202,6 +205,351 @@ class PromptRegistry:
                 tags=["fire", "json", "bbox", prompt_id.split('_')[0]],
                 use_cases=["wildfire_detection", "model_specific"]
             ))
+    
+    def _register_vision_capability_prompts(self):
+        """Register comprehensive vision capability testing prompts"""
+        
+        # Object Detection Prompt
+        self.register_prompt(PromptTemplate(
+            id="vision_object_detection",
+            name="Vision Object Detection",
+            description="Comprehensive object detection and identification in images",
+            template=(
+                "Analyze this image and identify all visible objects. For each object, provide: "
+                "name, category, and position. Respond in JSON format: "
+                '{"objects": [{"name": "string", "category": "string", "position": "string"}]}. '
+                "Categories should be: electronics, stationery, clothing, tableware, organic, accessory, decoration, or other."
+            ),
+            output_schema=OutputSchema(
+                type="json",
+                format={
+                    "objects": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {"type": "string"},
+                                "category": {"type": "string"},
+                                "position": {"type": "string"}
+                            }
+                        }
+                    }
+                },
+                validation_regex=r'\{"objects":\s*\[.*\]\s*\}',
+                fallback_detection=["objects", "BAD_JSON"]
+            ),
+            tags=["vision", "object_detection", "json"],
+            use_cases=["vision_testing", "object_recognition"]
+        ))
+        
+        # Object Counting Prompt
+        self.register_prompt(PromptTemplate(
+            id="vision_object_counting",
+            name="Vision Object Counting",
+            description="Count specific types of objects in images",
+            template=(
+                "Count the number of objects in each category in this image. "
+                "Respond in JSON format: "
+                '{"total_objects": number, "categories": {"electronics": number, "stationery": number, '
+                '"clothing": number, "tableware": number, "organic": number, "accessory": number, '
+                '"decoration": number}}. Set category counts to 0 if none are present.'
+            ),
+            output_schema=OutputSchema(
+                type="json", 
+                format={
+                    "total_objects": {"type": "integer"},
+                    "categories": {
+                        "type": "object",
+                        "properties": {
+                            "electronics": {"type": "integer"},
+                            "stationery": {"type": "integer"},
+                            "clothing": {"type": "integer"},
+                            "tableware": {"type": "integer"},
+                            "organic": {"type": "integer"},
+                            "accessory": {"type": "integer"},
+                            "decoration": {"type": "integer"}
+                        }
+                    }
+                },
+                validation_regex=r'\{"total_objects":\s*\d+,\s*"categories":\s*\{.*\}\s*\}',
+                fallback_detection=["total_objects", "categories", "BAD_JSON"]
+            ),
+            tags=["vision", "counting", "json"],
+            use_cases=["vision_testing", "object_counting"]
+        ))
+        
+        # Color Recognition Prompt
+        self.register_prompt(PromptTemplate(
+            id="vision_color_recognition",
+            name="Vision Color Recognition",
+            description="Identify and count colors of objects in images",
+            template=(
+                "Identify the primary colors of objects in this image. "
+                "Respond in JSON format: "
+                '{"colors": {"black": number, "white": number, "green": number, "red": number, '
+                '"silver": number, "blue": number, "yellow": number, "mixed": number}}. '
+                "Count how many objects have each color as their primary color."
+            ),
+            output_schema=OutputSchema(
+                type="json",
+                format={
+                    "colors": {
+                        "type": "object",
+                        "properties": {
+                            "black": {"type": "integer"},
+                            "white": {"type": "integer"},
+                            "green": {"type": "integer"},
+                            "red": {"type": "integer"},
+                            "silver": {"type": "integer"},
+                            "blue": {"type": "integer"},
+                            "yellow": {"type": "integer"},
+                            "mixed": {"type": "integer"}
+                        }
+                    }
+                },
+                validation_regex=r'\{"colors":\s*\{.*\}\s*\}',
+                fallback_detection=["colors", "BAD_JSON"]
+            ),
+            tags=["vision", "color", "json"],
+            use_cases=["vision_testing", "color_recognition"]
+        ))
+        
+        # Spatial Relationships Prompt
+        self.register_prompt(PromptTemplate(
+            id="vision_spatial_relationships",
+            name="Vision Spatial Relationships",
+            description="Analyze spatial relationships between objects",
+            template=(
+                "Describe the spatial relationships between objects in this image. "
+                "Focus on relative positions like 'left_of', 'right_of', 'above', 'below', 'near', 'overlaps'. "
+                "Respond in JSON format: "
+                '{"relationships": [{"object1": "string", "relationship": "string", "object2": "string"}]}.'
+            ),
+            output_schema=OutputSchema(
+                type="json",
+                format={
+                    "relationships": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "object1": {"type": "string"},
+                                "relationship": {"type": "string"},
+                                "object2": {"type": "string"}
+                            }
+                        }
+                    }
+                },
+                validation_regex=r'\{"relationships":\s*\[.*\]\s*\}',
+                fallback_detection=["relationships", "BAD_JSON"]
+            ),
+            tags=["vision", "spatial", "json"],
+            use_cases=["vision_testing", "spatial_analysis"]
+        ))
+        
+        # Size Estimation Prompt
+        self.register_prompt(PromptTemplate(
+            id="vision_size_estimation",
+            name="Vision Size Estimation",
+            description="Estimate relative sizes of objects",
+            template=(
+                "Categorize objects in this image by their relative sizes: small, medium, or large. "
+                "Respond in JSON format: "
+                '{"sizes": {"small": number, "medium": number, "large": number}}. '
+                "Count how many objects fall into each size category."
+            ),
+            output_schema=OutputSchema(
+                type="json",
+                format={
+                    "sizes": {
+                        "type": "object",
+                        "properties": {
+                            "small": {"type": "integer"},
+                            "medium": {"type": "integer"},
+                            "large": {"type": "integer"}
+                        }
+                    }
+                },
+                validation_regex=r'\{"sizes":\s*\{.*\}\s*\}',
+                fallback_detection=["sizes", "BAD_JSON"]
+            ),
+            tags=["vision", "size", "json"],
+            use_cases=["vision_testing", "size_estimation"]
+        ))
+        
+        # Text Recognition Prompt
+        self.register_prompt(PromptTemplate(
+            id="vision_text_recognition",
+            name="Vision Text Recognition",
+            description="Identify any visible text in images",
+            template=(
+                "Identify any text, logos, or readable content in this image. "
+                "Respond in JSON format: "
+                '{"text_found": boolean, "text_items": [{"location": "object_name", "text": "text_content"}]}.'
+            ),
+            output_schema=OutputSchema(
+                type="json",
+                format={
+                    "text_found": {"type": "boolean"},
+                    "text_items": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "location": {"type": "string"},
+                                "text": {"type": "string"}
+                            }
+                        }
+                    }
+                },
+                validation_regex=r'\{"text_found":\s*(true|false),\s*"text_items":\s*\[.*\]\s*\}',
+                fallback_detection=["text_found", "text_items", "BAD_JSON"]
+            ),
+            tags=["vision", "text", "ocr", "json"],
+            use_cases=["vision_testing", "text_recognition"]
+        ))
+        
+        # Material Recognition Prompt
+        self.register_prompt(PromptTemplate(
+            id="vision_material_recognition",
+            name="Vision Material Recognition", 
+            description="Identify materials and textures of objects",
+            template=(
+                "Identify the materials of objects in this image (e.g., plastic, metal, fabric, glass, wood, paper, ceramic). "
+                "Respond in JSON format: "
+                '{"materials": {"plastic": number, "metal": number, "fabric": number, "glass": number, '
+                '"wood": number, "paper": number, "ceramic": number, "organic": number}}. '
+                "Count how many objects are primarily made of each material."
+            ),
+            output_schema=OutputSchema(
+                type="json",
+                format={
+                    "materials": {
+                        "type": "object",
+                        "properties": {
+                            "plastic": {"type": "integer"},
+                            "metal": {"type": "integer"},
+                            "fabric": {"type": "integer"},
+                            "glass": {"type": "integer"},
+                            "wood": {"type": "integer"},
+                            "paper": {"type": "integer"},
+                            "ceramic": {"type": "integer"},
+                            "organic": {"type": "integer"}
+                        }
+                    }
+                },
+                validation_regex=r'\{"materials":\s*\{.*\}\s*\}',
+                fallback_detection=["materials", "BAD_JSON"]
+            ),
+            tags=["vision", "material", "texture", "json"],
+            use_cases=["vision_testing", "material_recognition"]
+        ))
+        
+        # Shape Analysis Prompt
+        self.register_prompt(PromptTemplate(
+            id="vision_shape_analysis",
+            name="Vision Shape Analysis",
+            description="Analyze geometric shapes of objects",
+            template=(
+                "Identify the basic geometric shapes of objects in this image. "
+                "Respond in JSON format: "
+                '{"shapes": {"rectangular": number, "circular": number, "cylindrical": number, '
+                '"curved": number, "irregular": number}}. '
+                "Count objects by their primary geometric shape."
+            ),
+            output_schema=OutputSchema(
+                type="json",
+                format={
+                    "shapes": {
+                        "type": "object",
+                        "properties": {
+                            "rectangular": {"type": "integer"},
+                            "circular": {"type": "integer"},
+                            "cylindrical": {"type": "integer"},
+                            "curved": {"type": "integer"},
+                            "irregular": {"type": "integer"}
+                        }
+                    }
+                },
+                validation_regex=r'\{"shapes":\s*\{.*\}\s*\}',
+                fallback_detection=["shapes", "BAD_JSON"]
+            ),
+            tags=["vision", "shape", "geometry", "json"],
+            use_cases=["vision_testing", "shape_analysis"]
+        ))
+        
+        # Comprehensive Analysis Prompt
+        self.register_prompt(PromptTemplate(
+            id="vision_comprehensive_analysis",
+            name="Vision Comprehensive Analysis",
+            description="Complete analysis combining all vision capabilities",
+            template=(
+                "Provide a comprehensive analysis of this image including: "
+                "1) List all objects with names and categories "
+                "2) Count total objects and objects per category "
+                "3) Identify primary colors "
+                "4) Describe spatial relationships "
+                "5) Identify materials and shapes "
+                "6) Note any visible text "
+                "Respond in structured JSON format with all requested information."
+            ),
+            output_schema=OutputSchema(
+                type="json",
+                format={
+                    "comprehensive_analysis": {
+                        "type": "object",
+                        "properties": {
+                            "objects": {"type": "array"},
+                            "total_objects": {"type": "integer"},
+                            "categories": {"type": "object"},
+                            "colors": {"type": "object"},
+                            "materials": {"type": "object"},
+                            "shapes": {"type": "object"},
+                            "text_found": {"type": "boolean"},
+                            "spatial_relationships": {"type": "array"}
+                        }
+                    }
+                },
+                validation_regex=r'\{"comprehensive_analysis":\s*\{.*\}\s*\}',
+                fallback_detection=["comprehensive_analysis", "BAD_JSON"]
+            ),
+            tags=["vision", "comprehensive", "analysis", "json"],
+            use_cases=["vision_testing", "complete_analysis"]
+        ))
+        
+        # Resolution Comparison Prompt
+        self.register_prompt(PromptTemplate(
+            id="vision_resolution_comparison",
+            name="Vision Resolution Comparison",
+            description="Analyze how image resolution affects object detection",
+            template=(
+                "Analyze this image and report on the level of detail visible. "
+                "Consider: Can you see fine details? Are small objects clearly visible? "
+                "Is text readable? Are materials and textures distinguishable? "
+                "Respond in JSON format: "
+                '{"resolution_analysis": {"detail_level": "high|medium|low", "small_objects_visible": boolean, '
+                '"text_readable": boolean, "textures_clear": boolean, "confidence_score": 0.0-1.0}}.'
+            ),
+            output_schema=OutputSchema(
+                type="json",
+                format={
+                    "resolution_analysis": {
+                        "type": "object",
+                        "properties": {
+                            "detail_level": {"type": "string", "enum": ["high", "medium", "low"]},
+                            "small_objects_visible": {"type": "boolean"},
+                            "text_readable": {"type": "boolean"},
+                            "textures_clear": {"type": "boolean"},
+                            "confidence_score": {"type": "number", "minimum": 0.0, "maximum": 1.0}
+                        }
+                    }
+                },
+                validation_regex=r'\{"resolution_analysis":\s*\{.*\}\s*\}',
+                fallback_detection=["resolution_analysis", "BAD_JSON"]
+            ),
+            tags=["vision", "resolution", "quality", "json"],
+            use_cases=["vision_testing", "resolution_analysis"]
+        ))
     
     def register_prompt(self, prompt: PromptTemplate):
         """Register a new prompt template"""

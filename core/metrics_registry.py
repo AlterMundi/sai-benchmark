@@ -30,6 +30,15 @@ class MetricType(Enum):
     CONFIDENCE = "confidence"
     ERROR_RATE = "error_rate"
     PARSE_SUCCESS_RATE = "parse_success_rate"
+    # Vision-specific metrics
+    OBJECT_DETECTION_ACCURACY = "object_detection_accuracy"
+    COUNTING_ACCURACY = "counting_accuracy"
+    COLOR_ACCURACY = "color_accuracy"
+    SPATIAL_ACCURACY = "spatial_accuracy"
+    TEXT_RECOGNITION_ACCURACY = "text_recognition_accuracy"
+    MATERIAL_RECOGNITION_ACCURACY = "material_recognition_accuracy"
+    COMPREHENSIVE_SCORE = "comprehensive_score"
+    RESOLUTION_CONSISTENCY = "resolution_consistency"
 
 
 @dataclass
@@ -163,6 +172,71 @@ class MetricsRegistry:
             description="Rate of errors during inference",
             higher_is_better=False,
             requires_ground_truth=False
+        ))
+        
+        # Vision-specific metrics
+        self.register_metric(MetricConfig(
+            metric_type=MetricType.OBJECT_DETECTION_ACCURACY,
+            function=self._calculate_object_detection_accuracy,
+            description="Accuracy of object detection and identification",
+            higher_is_better=True,
+            requires_ground_truth=True
+        ))
+        
+        self.register_metric(MetricConfig(
+            metric_type=MetricType.COUNTING_ACCURACY,
+            function=self._calculate_counting_accuracy,
+            description="Accuracy of object counting",
+            higher_is_better=True,
+            requires_ground_truth=True
+        ))
+        
+        self.register_metric(MetricConfig(
+            metric_type=MetricType.COLOR_ACCURACY,
+            function=self._calculate_color_accuracy,
+            description="Accuracy of color recognition",
+            higher_is_better=True,
+            requires_ground_truth=True
+        ))
+        
+        self.register_metric(MetricConfig(
+            metric_type=MetricType.SPATIAL_ACCURACY,
+            function=self._calculate_spatial_accuracy,
+            description="Accuracy of spatial relationship detection",
+            higher_is_better=True,
+            requires_ground_truth=True
+        ))
+        
+        self.register_metric(MetricConfig(
+            metric_type=MetricType.TEXT_RECOGNITION_ACCURACY,
+            function=self._calculate_text_recognition_accuracy,
+            description="Accuracy of text recognition",
+            higher_is_better=True,
+            requires_ground_truth=True
+        ))
+        
+        self.register_metric(MetricConfig(
+            metric_type=MetricType.MATERIAL_RECOGNITION_ACCURACY,
+            function=self._calculate_material_recognition_accuracy,
+            description="Accuracy of material identification",
+            higher_is_better=True,
+            requires_ground_truth=True
+        ))
+        
+        self.register_metric(MetricConfig(
+            metric_type=MetricType.COMPREHENSIVE_SCORE,
+            function=self._calculate_comprehensive_score,
+            description="Combined score across all vision capabilities",
+            higher_is_better=True,
+            requires_ground_truth=True
+        ))
+        
+        self.register_metric(MetricConfig(
+            metric_type=MetricType.RESOLUTION_CONSISTENCY,
+            function=self._calculate_resolution_consistency,
+            description="Consistency of results across different image resolutions",
+            higher_is_better=True,
+            requires_ground_truth=True
         ))
     
     def register_metric(self, config: MetricConfig):
@@ -480,6 +554,250 @@ class MetricsRegistry:
         }
         
         return comparison
+    
+    # Vision-specific metric calculation functions
+    def _calculate_object_detection_accuracy(self, predictions: List[Dict], ground_truth: List[Dict], **kwargs) -> float:
+        """Calculate object detection accuracy based on detected objects"""
+        if len(predictions) != len(ground_truth):
+            return 0.0
+        
+        total_score = 0.0
+        for pred, gt in zip(predictions, ground_truth):
+            pred_objects = set()
+            gt_objects = set()
+            
+            # Extract object names from predictions
+            if 'objects' in pred:
+                pred_objects = {obj.get('name', '').lower() for obj in pred['objects']}
+            elif 'comprehensive_analysis' in pred and 'objects' in pred['comprehensive_analysis']:
+                pred_objects = {obj.get('name', '').lower() for obj in pred['comprehensive_analysis']['objects']}
+            
+            # Extract object names from ground truth
+            if 'objects' in gt:
+                gt_objects = {obj.get('name', '').lower() for obj in gt['objects']}
+            
+            # Calculate Jaccard similarity (intersection over union)
+            if gt_objects:
+                intersection = len(pred_objects & gt_objects)
+                union = len(pred_objects | gt_objects)
+                score = intersection / union if union > 0 else 0.0
+                total_score += score
+        
+        return total_score / len(predictions) if predictions else 0.0
+    
+    def _calculate_counting_accuracy(self, predictions: List[Dict], ground_truth: List[Dict], **kwargs) -> float:
+        """Calculate accuracy of object counting"""
+        if len(predictions) != len(ground_truth):
+            return 0.0
+        
+        total_score = 0.0
+        for pred, gt in zip(predictions, ground_truth):
+            pred_total = pred.get('total_objects', 0)
+            gt_total = gt.get('total_objects', 0)
+            
+            # Also try comprehensive analysis format
+            if pred_total == 0 and 'comprehensive_analysis' in pred:
+                pred_total = pred['comprehensive_analysis'].get('total_objects', 0)
+            
+            if gt_total > 0:
+                # Calculate relative error (1 - |error|/gt_total), capped at 0
+                relative_error = abs(pred_total - gt_total) / gt_total
+                score = max(0.0, 1.0 - relative_error)
+                total_score += score
+        
+        return total_score / len(predictions) if predictions else 0.0
+    
+    def _calculate_color_accuracy(self, predictions: List[Dict], ground_truth: List[Dict], **kwargs) -> float:
+        """Calculate color recognition accuracy"""
+        if len(predictions) != len(ground_truth):
+            return 0.0
+        
+        total_score = 0.0
+        for pred, gt in zip(predictions, ground_truth):
+            pred_colors = pred.get('colors', {})
+            gt_colors = gt.get('colors', {})
+            
+            # Also try comprehensive analysis format
+            if not pred_colors and 'comprehensive_analysis' in pred:
+                pred_colors = pred['comprehensive_analysis'].get('colors', {})
+            
+            if gt_colors:
+                # Calculate accuracy for each color category
+                color_scores = []
+                for color, gt_count in gt_colors.items():
+                    pred_count = pred_colors.get(color, 0)
+                    if gt_count > 0:
+                        relative_error = abs(pred_count - gt_count) / gt_count
+                        color_score = max(0.0, 1.0 - relative_error)
+                    else:
+                        color_score = 1.0 if pred_count == 0 else 0.0
+                    color_scores.append(color_score)
+                
+                total_score += np.mean(color_scores) if color_scores else 0.0
+        
+        return total_score / len(predictions) if predictions else 0.0
+    
+    def _calculate_spatial_accuracy(self, predictions: List[Dict], ground_truth: List[Dict], **kwargs) -> float:
+        """Calculate spatial relationship accuracy"""
+        if len(predictions) != len(ground_truth):
+            return 0.0
+        
+        total_score = 0.0
+        for pred, gt in zip(predictions, ground_truth):
+            pred_relationships = pred.get('relationships', [])
+            gt_relationships = gt.get('spatial_relationships', [])
+            
+            # Also try comprehensive analysis format
+            if not pred_relationships and 'comprehensive_analysis' in pred:
+                pred_relationships = pred['comprehensive_analysis'].get('spatial_relationships', [])
+            
+            if gt_relationships:
+                # Convert to comparable format
+                pred_set = set()
+                for rel in pred_relationships:
+                    if all(key in rel for key in ['object1', 'relationship', 'object2']):
+                        pred_set.add((rel['object1'].lower(), rel['relationship'].lower(), rel['object2'].lower()))
+                
+                gt_set = set()
+                for rel in gt_relationships:
+                    if all(key in rel for key in ['object1', 'relationship', 'object2']):
+                        gt_set.add((rel['object1'].lower(), rel['relationship'].lower(), rel['object2'].lower()))
+                
+                # Calculate Jaccard similarity
+                if gt_set:
+                    intersection = len(pred_set & gt_set)
+                    union = len(pred_set | gt_set)
+                    score = intersection / union if union > 0 else 0.0
+                    total_score += score
+        
+        return total_score / len(predictions) if predictions else 0.0
+    
+    def _calculate_text_recognition_accuracy(self, predictions: List[Dict], ground_truth: List[Dict], **kwargs) -> float:
+        """Calculate text recognition accuracy"""
+        if len(predictions) != len(ground_truth):
+            return 0.0
+        
+        total_score = 0.0
+        for pred, gt in zip(predictions, ground_truth):
+            pred_text_found = pred.get('text_found', False)
+            gt_text_items = gt.get('text_visible', [])
+            
+            # Also try comprehensive analysis format  
+            if not pred_text_found and 'comprehensive_analysis' in pred:
+                pred_text_found = pred['comprehensive_analysis'].get('text_found', False)
+            
+            gt_has_text = len(gt_text_items) > 0
+            
+            # Simple binary accuracy for text detection
+            if pred_text_found == gt_has_text:
+                total_score += 1.0
+        
+        return total_score / len(predictions) if predictions else 0.0
+    
+    def _calculate_material_recognition_accuracy(self, predictions: List[Dict], ground_truth: List[Dict], **kwargs) -> float:
+        """Calculate material recognition accuracy"""
+        if len(predictions) != len(ground_truth):
+            return 0.0
+        
+        total_score = 0.0
+        for pred, gt in zip(predictions, ground_truth):
+            pred_materials = pred.get('materials', {})
+            gt_materials = gt.get('materials', {})
+            
+            # Also try comprehensive analysis format
+            if not pred_materials and 'comprehensive_analysis' in pred:
+                pred_materials = pred['comprehensive_analysis'].get('materials', {})
+            
+            if gt_materials:
+                # Calculate accuracy for each material category
+                material_scores = []
+                for material, gt_count in gt_materials.items():
+                    pred_count = pred_materials.get(material, 0)
+                    if gt_count > 0:
+                        relative_error = abs(pred_count - gt_count) / gt_count
+                        material_score = max(0.0, 1.0 - relative_error)
+                    else:
+                        material_score = 1.0 if pred_count == 0 else 0.0
+                    material_scores.append(material_score)
+                
+                total_score += np.mean(material_scores) if material_scores else 0.0
+        
+        return total_score / len(predictions) if predictions else 0.0
+    
+    def _calculate_comprehensive_score(self, predictions: List[Dict], ground_truth: List[Dict], **kwargs) -> float:
+        """Calculate comprehensive score combining multiple vision capabilities"""
+        if len(predictions) != len(ground_truth):
+            return 0.0
+        
+        # Calculate individual capability scores
+        object_score = self._calculate_object_detection_accuracy(predictions, ground_truth)
+        counting_score = self._calculate_counting_accuracy(predictions, ground_truth)
+        color_score = self._calculate_color_accuracy(predictions, ground_truth)
+        spatial_score = self._calculate_spatial_accuracy(predictions, ground_truth)
+        text_score = self._calculate_text_recognition_accuracy(predictions, ground_truth)
+        material_score = self._calculate_material_recognition_accuracy(predictions, ground_truth)
+        
+        # Weighted average (equal weights for now)
+        weights = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+        scores = [object_score, counting_score, color_score, spatial_score, text_score, material_score]
+        
+        weighted_sum = sum(w * s for w, s in zip(weights, scores))
+        total_weight = sum(weights)
+        
+        return weighted_sum / total_weight if total_weight > 0 else 0.0
+    
+    def _calculate_resolution_consistency(self, predictions: List[Dict], ground_truth: List[Dict], **kwargs) -> float:
+        """Calculate consistency of results across different image resolutions"""
+        if len(predictions) < 2:  # Need at least 2 resolutions to compare
+            return 1.0
+        
+        # Group predictions by image content (assuming same objects across resolutions)
+        resolution_groups = {}
+        for pred in predictions:
+            # Extract key identifying information
+            total_objects = pred.get('total_objects', 0)
+            if total_objects == 0 and 'comprehensive_analysis' in pred:
+                total_objects = pred['comprehensive_analysis'].get('total_objects', 0)
+            
+            # Group by total object count (simple heuristic)
+            if total_objects not in resolution_groups:
+                resolution_groups[total_objects] = []
+            resolution_groups[total_objects].append(pred)
+        
+        # Calculate consistency within each group
+        consistency_scores = []
+        for group in resolution_groups.values():
+            if len(group) >= 2:
+                # Compare first prediction with others in group
+                base_pred = group[0]
+                group_scores = []
+                
+                for other_pred in group[1:]:
+                    # Calculate similarity in object detection
+                    base_objects = set()
+                    other_objects = set()
+                    
+                    if 'objects' in base_pred:
+                        base_objects = {obj.get('name', '').lower() for obj in base_pred['objects']}
+                    elif 'comprehensive_analysis' in base_pred:
+                        base_objects = {obj.get('name', '').lower() for obj in base_pred['comprehensive_analysis'].get('objects', [])}
+                    
+                    if 'objects' in other_pred:
+                        other_objects = {obj.get('name', '').lower() for obj in other_pred['objects']}
+                    elif 'comprehensive_analysis' in other_pred:
+                        other_objects = {obj.get('name', '').lower() for obj in other_pred['comprehensive_analysis'].get('objects', [])}
+                    
+                    # Jaccard similarity
+                    if base_objects or other_objects:
+                        intersection = len(base_objects & other_objects)
+                        union = len(base_objects | other_objects)
+                        similarity = intersection / union if union > 0 else 0.0
+                        group_scores.append(similarity)
+                
+                if group_scores:
+                    consistency_scores.append(np.mean(group_scores))
+        
+        return np.mean(consistency_scores) if consistency_scores else 1.0
 
 
 # Global registry instance
