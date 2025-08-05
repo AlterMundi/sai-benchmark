@@ -21,7 +21,7 @@ from .model_registry import ModelRegistry, model_registry
 from .engine_registry import EngineRegistry, engine_registry
 from .metrics_registry import MetricsRegistry, metrics_registry, MetricResult
 from .resource_manager import ResourceManager, resource_manager, ResourceError
-from ..engines.base_engine import EngineResponse
+from engines.base_engine import EngineResponse
 
 
 @dataclass
@@ -65,6 +65,9 @@ class TestResult:
     prompt_id: str
     model_id: str
     engine_response: EngineResponse
+    images: List[str] = field(default_factory=list)
+    dataset_path: str = ""
+    sequence_id: str = ""
     parsed_output: Optional[Dict[str, Any]] = None
     validation_result: Optional[Dict[str, Any]] = None
     ground_truth: Optional[Dict[str, Any]] = None
@@ -76,6 +79,9 @@ class TestResult:
             "test_case_id": self.test_case_id,
             "prompt_id": self.prompt_id,
             "model_id": self.model_id,
+            "dataset_path": self.dataset_path,
+            "sequence_id": self.sequence_id,
+            "images": self.images,
             "engine_response": self.engine_response.to_dict(),
             "parsed_output": self.parsed_output,
             "validation_result": self.validation_result,
@@ -294,6 +300,9 @@ class TestSuiteRunner:
             test_case_id=test_case.id,
             prompt_id=test_case.prompt_id,
             model_id=test_case.model_id,
+            images=test_case.images,
+            dataset_path=test_case.dataset_path,
+            sequence_id=test_case.metadata.get('sequence_id', ''),
             engine_response=engine_response,
             parsed_output=parsed_output,
             validation_result=validation_result,

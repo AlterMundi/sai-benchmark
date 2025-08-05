@@ -15,13 +15,12 @@ prompts:
 
 # Single model for controlled comparison
 models:
-  - "qwen2.5-vl:7b"
+  - "qwen2.5vl:7b"
 
-# Diverse datasets
+# Available datasets
 datasets:
-  - "data/fire_dataset_v1"
-  - "data/smoke_sequences"
-  - "data/challenging_cases"
+  - "test_sequences"
+  - "images"
 
 # Focus on accuracy and parsing metrics
 metrics:

@@ -6,17 +6,18 @@ version: "1.0"
 prompts:
   - "early_fire_json"
 
-# Multiple models to compare
+# Multiple models to compare (using available Ollama models)
 models:
-  - "qwen2.5-vl:7b"
-  - "qwen2.5-vl-7b-hf"
-  - "gpt-4o"
-  - "llava:13b"
-  - "minicpm-v:8b"
+  - "qwen2.5vl:7b"
+  - "llama3.2-vision:latest"
+  - "minicpm-v:latest"
+  - "bakllava:latest"
+  - "llava-phi3:latest"
 
-# Standard dataset
+# Available datasets
 datasets:
-  - "data/fire_benchmark_standard"
+  - "test_sequences"
+  - "images"
 
 # Core metrics for comparison
 metrics:

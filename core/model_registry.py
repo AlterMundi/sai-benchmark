@@ -104,10 +104,10 @@ class ModelRegistry:
         
         # Qwen 2.5-VL models
         self.register_model(ModelConfig(
-            id="qwen2.5-vl:7b",
+            id="qwen2.5vl:7b",
             name="Qwen 2.5-VL 7B (Ollama)",
             engine=EngineType.OLLAMA,
-            model_path="qwen2.5-vl:7b",
+            model_path="qwen2.5vl:7b",
             capabilities={
                 ModelCapability.VISION,
                 ModelCapability.TEXT,
@@ -201,6 +201,10 @@ class ModelRegistry:
             ("llava:13b", "LLaVA 13B", "llava:13b"),
             ("llava:7b", "LLaVA 7B", "llava:7b"),
             ("minicpm-v:8b", "MiniCPM-V 8B", "minicpm-v:8b"),
+            ("minicpm-v:latest", "MiniCPM-V Latest", "minicpm-v:latest"),
+            ("llama3.2-vision:latest", "LLaMA 3.2 Vision", "llama3.2-vision:latest"),
+            ("bakllava:latest", "BakLLaVA", "bakllava:latest"),
+            ("llava-phi3:latest", "LLaVA Phi3", "llava-phi3:latest"),
             ("gemma2:27b", "Gemma 2 27B", "gemma2:27b"),
             ("mistral-small:22b", "Mistral Small 22B", "mistral-small:22b")
         ]
