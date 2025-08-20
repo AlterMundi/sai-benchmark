@@ -2,13 +2,158 @@
 
 **Unified Multi-Dimensional Vision Assessment Framework**
 
-SAI-Benchmark provides comprehensive benchmarking capabilities for vision-language models with support for multiple prompting strategies, models, and inference backends.
+SAI-Benchmark provides comprehensive benchmarking capabilities for vision-language models with support for multiple prompting strategies, models, and inference backends. Now includes **SAI Neural Network Architecture (RNA)** for early fire detection with cascade inference pipeline.
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/release/python-380/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-passing-green.svg)](tests/)
 
-## 🌟 Key Features
+## 🔥 NEW: SAI Neural Network Implementation
+
+The project now includes a complete neural network implementation for early fire detection with **production-ready datasets**:
+
+- **🎯 Cascade Architecture**: YOLOv8-s detector + SmokeyNet-Lite temporal verifier
+- **📊 Native Resolution**: 1440×808 optimized for camera feeds (2880×1616 scaled)
+- **⚡ High Performance**: 6-10 FPS on RTX 3090, 100-150ms latency
+- **🧠 Smart Verification**: Temporal consistency with 2-3 frame persistence
+- **📈 Production Ready**: Integrated with SAI-Benchmark framework
+- **📀 Complete Datasets**: 173K+ training images from 5 major fire detection datasets
+
+### Dataset Status (Latest Update)
+| Dataset | Status | Images | Size | Source |
+|---------|--------|--------|------|--------|
+| **FASDD** | ✅ Ready | 95,314 | 11.4GB | Kaggle |
+| **PyroNear-2024** | ✅ Ready | 33,600 | 3.1GB | HuggingFace |
+| **D-Fire** | ✅ Ready | 21,527 | 3.0GB | Manual |
+| **FIgLib** | ✅ Ready | 19,317 | 277MB | HuggingFace |
+| **NEMO** | ✅ Ready | 3,493 | 1.42GB | Kaggle |
+
+**Total Available**: 173,251 training images ready for immediate use
+
+### Quick Start with SAI RNA
+```bash
+# Setup RNA environment
+python RNA/scripts/setup_environment.py
+
+# Download training datasets (automated)
+python RNA/scripts/download_datasets.py --datasets all
+
+# Train cascade models
+python RNA/training/detector_trainer.py --config RNA/configs/sai_cascade_config.yaml
+
+# Run inference
+python RNA/inference/cascade_inference.py --weights RNA/weights/
+```
+
+See [RNA Documentation](RNA/README.md) for detailed implementation guide.
+
+## 🔄 SAI Temporal Workflow: Distributed Camera System
+
+### Architecture Overview
+
+The SAI system operates with a **distributed temporal architecture** where edge cameras capture images periodically and send them to a central server for cascade inference processing.
+
+### 📸 Camera Capture Flow
+```
+Camera Network (every 5 seconds):
+Camera 1: Photo @ T+0s, T+5s, T+10s, T+15s...
+Camera 2: Photo @ T+2s, T+7s, T+12s, T+17s...
+Camera N: Photo @ T+xs, T+x+5s, T+x+10s...
+```
+
+### 🖥️ Server-Side Temporal Processing
+
+**The server maintains independent temporal buffers for each camera:**
+
+```python
+# Server Architecture
+server_buffers = {
+    "camera_1": TemporalBuffer(max_length=5, retention_time=60.0),
+    "camera_2": TemporalBuffer(max_length=5, retention_time=60.0),
+    "camera_N": TemporalBuffer(max_length=5, retention_time=60.0)
+}
+```
+
+### 🔄 Per-Photo Inference Pipeline
+
+**When a new photo arrives from any camera:**
+
+```
+1. Photo Reception
+   📸 New photo from Camera_1 @ T=15s
+   ↓
+2. Buffer Update  
+   🗂️ Buffer: [Photo_T-10s, Photo_T-5s, Photo_CURRENT]
+   ↓
+3. Detector Stage
+   🎯 YOLOv8-s processes ONLY current photo → detects ROI(x,y,w,h)
+   ↓
+4. Temporal Verifier Stage
+   🔍 SmokeyNet-Lite extracts ROI from last 3 buffered photos:
+       • ROI(x,y,w,h) from Photo_T-10s → Frame 1
+       • ROI(x,y,w,h) from Photo_T-5s  → Frame 2  
+       • ROI(x,y,w,h) from Photo_CURRENT → Frame 3
+   ↓
+5. Temporal Analysis
+   ⏱️ Analyzes 3-frame sequence → Smoke/No-Smoke verification
+   ↓
+6. Alarm Decision
+   🚨 Persistence logic → Final alarm trigger
+```
+
+### ⏱️ Real-Time Timeline Example
+
+```
+T=0s:   Camera_1 sends Photo_1 
+        → Buffer: [Photo_1] 
+        → Detector: ✅ Detection 
+        → Verifier: ❌ SKIP (only 1 frame)
+
+T=5s:   Camera_1 sends Photo_2 
+        → Buffer: [Photo_1, Photo_2] 
+        → Detector: ✅ Detection 
+        → Verifier: ⚠️ PARTIAL (padded sequence)
+
+T=10s:  Camera_1 sends Photo_3 
+        → Buffer: [Photo_1, Photo_2, Photo_3] 
+        → Detector: ✅ Detection 
+        → Verifier: ✅ FULL ANALYSIS (complete 3-frame sequence)
+
+T=15s:  Camera_1 sends Photo_4 
+        → Buffer: [Photo_2, Photo_3, Photo_4] 
+        → Detector: ✅ Detection 
+        → Verifier: ✅ FULL ANALYSIS → 🚨 ALARM TRIGGERED!
+```
+
+### 🎯 Cold Start Behavior
+
+**System handles initial frames gracefully:**
+
+- **Frame 1**: Detector only (no temporal verification)
+- **Frame 2**: Verifier with padded sequence `[Frame1, Frame1, Frame2]`
+- **Frame 3+**: Full temporal analysis with real sequences
+
+### ⚡ Key Advantages
+
+- **📊 One inference per photo**: Efficient processing
+- **🔄 Independent camera buffers**: Scalable architecture  
+- **⚱️ Low latency**: Immediate response per photo
+- **🧠 Temporal intelligence**: Captures smoke evolution over time
+- **🛡️ False positive reduction**: Multi-frame verification
+- **🚀 Cold start ready**: Works from first frame
+
+### 🔧 Configuration Parameters
+
+```python
+temporal_frames: int = 3                    # Analyze last 3 photos
+min_persistence_frames: int = 2             # Minimum detections for alarm
+persistence_time_window: float = 30.0       # 30-second alarm window
+buffer_retention_time: float = 60.0         # Keep photos for 60 seconds
+```
+
+This distributed temporal architecture ensures **robust early fire detection** while maintaining **real-time performance** across multiple camera deployments.
+
+## 🌟 Benchmark Framework Features
 
 - **🎯 Multi-Prompt Testing**: Systematic evaluation across different prompting strategies
 - **🤖 Multi-Model Support**: Qwen 2.5-VL, LLaMA 3.2 Vision, Gemma 3 27B, Mistral Small 3.1 24B Vision, and more

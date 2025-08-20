@@ -194,6 +194,14 @@ test_sequences/
 sequences_subset/
 ~/sequences*
 
+# RNA Dataset Protection
+RNA/data/raw/
+RNA/data/processed/
+RNA/data/datasets/
+RNA/datasets/
+*.parquet
+*.arrow
+
 # Output directories
 out/
 results/
@@ -208,6 +216,12 @@ models/cache/
 *.pth
 *.bin
 *.safetensors
+
+# Training outputs
+RNA/weights/
+RNA/checkpoints/
+RNA/runs/
+RNA/logs/
 
 # HuggingFace cache
 .cache/
@@ -227,6 +241,11 @@ tmp/
 *.zip
 *.7z
 *.rar
+
+# API Keys and credentials
+kaggle.json
+*.key
+*.secret
 
 # IDE and editor files
 *.sublime-*

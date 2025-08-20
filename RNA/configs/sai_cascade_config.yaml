@@ -1,0 +1,131 @@
+# SAI Cascade Model Configuration
+# Configuration for the cascade inference system with YOLOv8-s detector and SmokeyNet-Lite verifier
+
+model:
+  name: "SAI Cascade v1"
+  version: "1.0"
+  description: "Cascade inference system for early smoke/fire detection"
+  
+detector:
+  architecture: "yolov8s"
+  weights_path: "RNA/weights/detector.pt"
+  conf_threshold: 0.3
+  iou_threshold: 0.45
+  max_detections: 300
+  input_size: [640, 640]
+  classes:
+    - "smoke"
+    - "fire"
+
+verifier:
+  architecture: "smokeynet_lite"
+  weights_path: "RNA/weights/verifier.pt"
+  sequence_length: 3
+  input_size: [224, 224]
+  lstm_hidden_dim: 256
+  lstm_num_layers: 2
+  dropout: 0.3
+
+cascade:
+  temporal_frames: 3
+  min_persistence_frames: 2
+  persistence_time_window: 30.0  # seconds
+  buffer_retention_time: 60.0   # seconds
+  expand_roi_ratio: 0.1
+
+training:
+  detector:
+    epochs: 100
+    batch_size: 16
+    learning_rate: 0.001
+    weight_decay: 0.0005
+    warmup_epochs: 3
+    datasets:
+      - name: "fasdd"
+        path: "data/fasdd"
+        weight: 0.4
+      - name: "dfire"
+        path: "data/dfire"  
+        weight: 0.3
+      - name: "nemo"
+        path: "data/nemo"
+        weight: 0.3
+    
+  verifier:
+    epochs: 50
+    batch_size: 8
+    learning_rate: 0.0001
+    weight_decay: 0.0001
+    datasets:
+      - name: "figlib"
+        path: "data/figlib"
+        weight: 0.6
+      - name: "synthetic_sequences"
+        path: "data/synthetic"
+        weight: 0.4
+
+  augmentations:
+    detector:
+      - mosaic: 0.5
+      - mixup: 0.3
+      - cutmix: 0.3
+      - hsv_h: 0.015
+      - hsv_s: 0.7
+      - hsv_v: 0.4
+      - degrees: 10.0
+      - translate: 0.1
+      - scale: 0.5
+      - shear: 2.0
+      - flipud: 0.0
+      - fliplr: 0.5
+    
+    verifier:
+      - horizontal_flip: 0.5
+      - rotation: 15.0
+      - brightness: 0.2
+      - contrast: 0.2
+      - saturation: 0.2
+      - hue: 0.1
+      - gaussian_blur: 0.1
+
+evaluation:
+  metrics:
+    - "accuracy"
+    - "precision" 
+    - "recall"
+    - "f1_score"
+    - "bbox_iou"
+    - "early_fire_score"
+    - "latency"
+    - "parse_success_rate"
+  
+  thresholds:
+    detector_conf: 0.3
+    verifier_conf: 0.5
+    persistence_frames: 2
+  
+  targets:
+    recall_min: 0.80
+    ttd_max: 4.0  # minutes
+    fps_reduction: 0.50  # 50% reduction in false positives
+
+deployment:
+  device: "cuda"  # auto, cpu, cuda
+  batch_size: 1
+  optimization:
+    tensorrt: true
+    onnx: true
+    half_precision: true
+  
+  monitoring:
+    log_level: "INFO"
+    metrics_interval: 60  # seconds
+    health_check_interval: 300  # seconds
+
+hardware:
+  gpu:
+    memory_gb: 8.0
+    compute_capability: "7.5"  # RTX 3090
+  cpu:
+    cores: 16
+    memory_gb: 32
