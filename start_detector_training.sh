@@ -56,6 +56,7 @@ echo ""
 # Start training in background with comprehensive logging
 nohup python RNA/training/detector_trainer.py \
     --config RNA/configs/sai_cascade_config.yaml \
+    --prepare-data \
     --auto-resume \
     > RNA/training/logs/detector_training.log 2>&1 &
 

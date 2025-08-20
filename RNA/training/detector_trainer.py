@@ -155,7 +155,7 @@ class YOLOTrainer:
         logger.info("STARTING SAI YOLOv8-s DETECTOR TRAINING")
         logger.info("=" * 60)
         
-        training_config = self.config['training']
+        training_config = self.config['training']['detector']
         
         # Training parameters optimized for 1440×808 and RTX 3090
         train_params = {
@@ -272,8 +272,8 @@ def load_config(config_path: str) -> Dict[str, Any]:
 def estimate_training_time(config: Dict[str, Any], dataset_size: int) -> float:
     """Estimate training time based on configuration"""
     # Base estimate for RTX 3090 at 1440×808
-    epochs = config['training']['epochs']
-    batch_size = config['training']['batch_size']
+    epochs = config['training']['detector']['epochs']
+    batch_size = config['training']['detector']['batch_size']
     
     # Estimates based on performance_estimates.md
     time_per_epoch_hours = 0.15  # ~9 minutes per epoch for 173K images
