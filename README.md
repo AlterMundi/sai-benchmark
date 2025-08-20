@@ -31,17 +31,31 @@ The project now includes a complete neural network implementation for early fire
 **Total Available**: 173,251 training images ready for immediate use
 
 ### Quick Start with SAI RNA
+
+#### Training Pipeline (Ready to Run)
 ```bash
-# Setup RNA environment
-python RNA/scripts/setup_environment.py
+# Check system readiness
+python3 check_training_readiness.py
 
-# Download training datasets (automated)
-python RNA/scripts/download_datasets.py --datasets all
+# Start autonomous training (15-20 hours)
+./start_detector_training.sh
 
-# Train cascade models
+# Monitor training progress
+tail -f RNA/training/logs/detector_training.log
+```
+
+#### Manual Training Steps
+```bash
+# Setup training environment
+source RNA/training/venv/bin/activate
+
+# Train YOLOv8-s detector
 python RNA/training/detector_trainer.py --config RNA/configs/sai_cascade_config.yaml
 
-# Run inference
+# Train SmokeyNet-Lite verifier (after detector completes)
+python RNA/training/verifier_trainer.py --config RNA/configs/sai_cascade_config.yaml
+
+# Run cascade inference
 python RNA/inference/cascade_inference.py --weights RNA/weights/
 ```
 

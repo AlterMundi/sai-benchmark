@@ -34,12 +34,24 @@ cascade:
   expand_roi_ratio: 0.1
 
 training:
+  output_dir: "RNA/training/runs"
   detector:
     epochs: 100
-    batch_size: 16
+    batch_size: 8
+    image_size: [1440, 808]  # Native camera resolution scaled
     learning_rate: 0.001
     weight_decay: 0.0005
     warmup_epochs: 3
+    patience: 50
+    save_period: 10
+    cache: true
+    mixed_precision: true
+    workers: 8
+    optimizer: "AdamW"
+    box_loss_gain: 7.5
+    cls_loss_gain: 0.5
+    dfl_loss_gain: 1.5
+    resume: true
     datasets:
       - name: "fasdd"
         path: "data/fasdd"
