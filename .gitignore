@@ -194,13 +194,39 @@ test_sequences/
 sequences_subset/
 ~/sequences*
 
-# RNA Dataset Protection
+# RNA Dataset Protection - Comprehensive exclusion
 RNA/data/raw/
 RNA/data/processed/
 RNA/data/datasets/
+RNA/data/mega_fire_dataset/
+RNA/data/*/
 RNA/datasets/
 *.parquet
 *.arrow
+
+# Image datasets and large files
+*.jpg
+*.jpeg
+*.png
+*.bmp
+*.tiff
+*.webp
+!RNA/docs/images/*.png
+!RNA/docs/images/*.jpg
+
+# Dataset files
+*.txt
+!requirements.txt
+!RNA/configs/*.txt
+!README.txt
+!LICENSE.txt
+
+# YOLO dataset structure
+images/
+labels/
+train/
+val/
+test/
 
 # Output directories
 out/
