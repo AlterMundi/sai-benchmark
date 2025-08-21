@@ -251,10 +251,20 @@ RNA/checkpoints/
 RNA/runs/
 RNA/logs/
 RNA/training/logs/
+RNA/training/test_runs/
+RNA/training/*.pt
+runs/
+
+# YOLO model weights
+*.pt
+yolov8*.pt
+yolo11*.pt
+!*config*.yaml
 
 # SAI Integrity Reports
 *integrity_report.txt
 sai_integrity_report.txt
+*test_results*.txt
 
 # HuggingFace cache
 .cache/
