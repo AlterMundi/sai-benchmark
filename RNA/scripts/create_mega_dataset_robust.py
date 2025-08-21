@@ -219,35 +219,43 @@ def main():
         dir_path.mkdir(parents=True, exist_ok=True)
         print(f"📁 Created: {dir_path}")
     
-    # Dataset configurations with priority order
+    # Dataset configurations with verified sources
     datasets = [
         {
             'name': 'fasdd_combined',
             'path': processed_dir / 'combined_mega_dataset',
             'prefix': 'fasdd',
-            'desc': 'FASDD+D-Fire Combined (Primary)',
-            'priority': 1
+            'desc': 'FASDD+D-Fire Combined (Primary) - VERIFIED',
+            'priority': 1,
+            'expected_with_labels': 19179,
+            'expected_total': 32557
         },
         {
             'name': 'nemo',
             'path': processed_dir / 'nemo_yolo',
             'prefix': 'nemo',
-            'desc': 'NEMO Fire Detection',
-            'priority': 2
+            'desc': 'NEMO Fire Detection - VERIFIED',
+            'priority': 2,
+            'expected_with_labels': 2161,
+            'expected_total': 2680
         },
         {
             'name': 'pyronear',
             'path': processed_dir / 'pyronear_yolo',
             'prefix': 'pyro',
-            'desc': 'Pyronear-2024 Geographical',
-            'priority': 2
+            'desc': 'Pyronear-2024 Geographical - VERIFIED',
+            'priority': 2,
+            'expected_with_labels': 24525,
+            'expected_total': 24526
         },
         {
             'name': 'figlib',
             'path': processed_dir / 'figlib_yolo',
             'prefix': 'figlib',
-            'desc': 'FigLib Smoke Temporal',
-            'priority': 3
+            'desc': 'FigLib Smoke Temporal - VERIFIED',
+            'priority': 3,
+            'expected_with_labels': 4237,
+            'expected_total': 4237
         }
     ]
     

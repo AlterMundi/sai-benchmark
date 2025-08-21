@@ -1,0 +1,85 @@
+# SAI Test Configuration - Quick 15-minute validation
+# Reduced parameters for fast testing before full training
+
+model:
+  name: "SAI Cascade Test"
+  version: "test-1.0"
+  description: "Quick validation test before full training"
+  
+detector:
+  architecture: "yolov8s"
+  weights_path: "RNA/weights/detector_test.pt"
+  conf_threshold: 0.3
+  iou_threshold: 0.45
+  max_detections: 300
+  input_size: [640, 640]  # Reduced from 1440x808 for speed
+  classes:
+    - "smoke"
+    - "fire"
+
+training:
+  output_dir: "RNA/training/test_runs"
+  detector:
+    epochs: 10                    # Reduced from 100
+    batch_size: 16               # Increased for speed (if memory allows)
+    image_size: [640, 640]       # Reduced resolution for speed
+    learning_rate: 0.01          # Higher LR for faster convergence
+    weight_decay: 0.0005
+    warmup_epochs: 1             # Reduced from 3
+    patience: 5                  # Reduced from 50
+    save_period: 5               # Save every 5 epochs
+    cache: true
+    mixed_precision: true
+    workers: 8
+    optimizer: "AdamW"
+    box_loss_gain: 7.5
+    cls_loss_gain: 0.5
+    dfl_loss_gain: 1.5
+    resume: false                # Start fresh for test
+    
+    # Use subset of mega dataset for speed
+    dataset_path: "../data/mega_fire_dataset"
+    subset_ratio: 0.1            # Use only 10% of data (~6.4K images)
+    
+  augmentations:
+    detector:
+      # Reduced augmentations for speed
+      - mosaic: 0.3
+      - mixup: 0.1
+      - hsv_h: 0.01
+      - hsv_s: 0.5
+      - hsv_v: 0.3
+      - degrees: 5.0
+      - translate: 0.05
+      - scale: 0.3
+      - fliplr: 0.5
+
+evaluation:
+  metrics:
+    - "accuracy"
+    - "precision" 
+    - "recall"
+    - "bbox_iou"
+  
+  thresholds:
+    detector_conf: 0.3
+  
+  targets:
+    recall_min: 0.70     # Slightly lower for test
+    
+deployment:
+  device: "cuda"
+  batch_size: 1
+  optimization:
+    half_precision: true
+  
+  monitoring:
+    log_level: "INFO"
+
+hardware:
+  gpu:
+    memory_gb: 24.0      # RTX 3090
+    compute_capability: "8.6"
+  cpu:
+    cores: 16
+    memory_gb: 32
