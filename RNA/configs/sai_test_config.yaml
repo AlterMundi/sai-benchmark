@@ -1,10 +1,10 @@
-# SAI Test Configuration - Quick 15-minute validation
-# Reduced parameters for fast testing before full training
+# SAI Test Configuration - Complete Dataset Integrity Test
+# 1 epoch with full dataset for comprehensive validation
 
 model:
-  name: "SAI Cascade Test"
-  version: "test-1.0"
-  description: "Quick validation test before full training"
+  name: "SAI Complete Integrity Test"
+  version: "integrity-1.0"
+  description: "1 epoch complete dataset integrity validation"
   
 detector:
   architecture: "yolov8s"
@@ -20,14 +20,14 @@ detector:
 training:
   output_dir: "RNA/training/test_runs"
   detector:
-    epochs: 10                    # Reduced from 100
+    epochs: 1                     # Single epoch for complete dataset validation
     batch_size: 16               # Increased for speed (if memory allows)
     image_size: [640, 640]       # Reduced resolution for speed
     learning_rate: 0.01          # Higher LR for faster convergence
     weight_decay: 0.0005
     warmup_epochs: 1             # Reduced from 3
-    patience: 5                  # Reduced from 50
-    save_period: 5               # Save every 5 epochs
+    patience: 1                  # Single epoch test
+    save_period: 1               # Save after single epoch
     cache: true
     mixed_precision: true
     workers: 8
@@ -37,9 +37,9 @@ training:
     dfl_loss_gain: 1.5
     resume: false                # Start fresh for test
     
-    # Use subset of mega dataset for speed
+    # Use complete mega dataset for integrity validation
     dataset_path: "../data/mega_fire_dataset"
-    subset_ratio: 0.1            # Use only 10% of data (~6.4K images)
+    subset_ratio: 1.0            # Use 100% of data (64K images) for complete validation
     
   augmentations:
     detector:

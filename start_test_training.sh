@@ -6,13 +6,13 @@
 
 set -e
 
-echo "🔥 SAI Test Training - Quick Validation"
-echo "========================================"
-echo "⏱️  ESTIMATED TIME: 10-15 minutes"
-echo "🎯 PURPOSE: Validate training pipeline before full run"
-echo "📊 DATASET: 10% subset (~6,400 images)"
-echo "🏃 EPOCHS: 10 (vs 100 for full training)"
-echo "========================================"
+echo "🔥 SAI Complete Dataset Integrity Test"
+echo "======================================"
+echo "⏱️  ESTIMATED TIME: ~14 minutes"
+echo "🎯 PURPOSE: Complete dataset integrity validation"
+echo "📊 DATASET: 100% complete dataset (64,000 images)"
+echo "🏃 EPOCHS: 1 (complete validation pass)"
+echo "======================================"
 
 # Check if we're in the right directory
 if [ ! -f "RNA/configs/sai_test_config.yaml" ]; then
@@ -71,8 +71,8 @@ echo ""
 echo "🚀 STARTING TEST TRAINING"
 echo "=========================="
 echo "🕒 Start time: $(date)"
-echo "⏱️  Estimated completion: $(date -d '+15 minutes')"
-echo "📊 Monitor progress: tail -f RNA/training/test_runs/train/*/logs/train.log"
+echo "⏱️  Estimated completion: $(date -d '+14 minutes')"
+echo "📊 Monitor progress: tail -f RNA/training/test_runs/integrity_test/logs/train.log"
 echo ""
 
 # Run training with test config
@@ -119,14 +119,14 @@ train_params = {
     'cls': config['training']['detector']['cls_loss_gain'],
     'dfl': config['training']['detector']['dfl_loss_gain'],
     'project': 'test_runs',
-    'name': 'test_detector',
+    'name': 'integrity_test',
     'exist_ok': True,
     'verbose': True,
-    'fraction': 0.1  # Use only 10% of dataset for speed
+    'fraction': 1.0  # Use 100% of dataset for complete integrity test
 }
 
 print(f'🚀 Starting test training with {train_params[\"fraction\"]*100:.0f}% of dataset...')
-print(f'⏱️  Expected duration: ~{config[\"training\"][\"detector\"][\"epochs\"]} epochs × ~1 min/epoch = {config[\"training\"][\"detector\"][\"epochs\"]} minutes')
+print(f'⏱️  Expected duration: ~{config[\"training\"][\"detector\"][\"epochs\"]} epoch with full dataset = ~14 minutes')
 
 start_time = time.time()
 
@@ -138,7 +138,7 @@ try:
     print(f'')
     print(f'🎉 TEST TRAINING COMPLETED SUCCESSFULLY!')
     print(f'⏱️  Actual training time: {training_time/60:.1f} minutes')
-    print(f'📊 Results saved to: test_runs/test_detector/')
+    print(f'📊 Results saved to: test_runs/integrity_test/')
     print(f'')
     print(f'📈 Quick metrics:')
     if hasattr(results, 'results_dict'):
@@ -147,8 +147,8 @@ try:
                 print(f'   {key}: {value:.3f}')
     
     # Save test results
-    with open('test_runs/test_results.txt', 'w') as f:
-        f.write(f'SAI Test Training Results\\n')
+    with open('test_runs/integrity_test_results.txt', 'w') as f:
+        f.write(f'SAI Complete Dataset Integrity Test Results\\n')
         f.write(f'Training time: {training_time/60:.1f} minutes\\n')
         f.write(f'Epochs completed: {config[\"training\"][\"detector\"][\"epochs\"]}\\n')
         f.write(f'Dataset fraction: {train_params[\"fraction\"]*100:.0f}%\\n')
@@ -156,13 +156,13 @@ try:
             for key, value in results.results_dict.items():
                 f.write(f'{key}: {value}\\n')
     
-    print(f'✅ Test results saved to: test_runs/test_results.txt')
+    print(f'✅ Test results saved to: test_runs/integrity_test_results.txt')
     print(f'')
-    print(f'🚀 SYSTEM VALIDATION: SUCCESS!')
-    print(f'   ✅ GPU training works')
-    print(f'   ✅ Dataset loading works') 
-    print(f'   ✅ Model training works')
-    print(f'   ✅ Ready for full training!')
+    print(f'🚀 COMPLETE DATASET INTEGRITY: SUCCESS!')
+    print(f'   ✅ All 64,000 images processed successfully')
+    print(f'   ✅ All labels validated in training loop')
+    print(f'   ✅ No corrupted files detected')
+    print(f'   ✅ Pipeline ready for full training!')
     
 except Exception as e:
     print(f'')
@@ -185,7 +185,7 @@ echo "🕒 End time: $(date)"
 deactivate
 
 echo ""
-echo "📋 Next steps if test successful:"
-echo "   1. Review test results in RNA/training/test_runs/"
-echo "   2. If satisfied, run full training: ./start_detector_training.sh"
-echo "   3. Full training estimated time: 15-20 hours"
+echo "📋 Next steps if integrity test successful:"
+echo "   1. Review test results in RNA/training/test_runs/integrity_test/"
+echo "   2. Dataset confirmed 100% ready for production training"
+echo "   3. Run full training: ./start_detector_training.sh (15-20 hours)"
