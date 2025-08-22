@@ -39,8 +39,11 @@ The project now includes a complete neural network implementation for early fire
 # Check system readiness
 python3 check_training_readiness.py
 
-# Start autonomous training (39 hours on RTX 3090, 7-11 hours on A100)
+# Start autonomous training (39 hours on RTX 3090, 6-9 hours on A100 optimized)
 ./start_detector_training.sh
+
+# For A100 optimal performance (300GB+ storage required)
+./start_detector_training_optimized.sh
 
 # Monitor training progress
 tail -f RNA/training/logs/detector_training.log
