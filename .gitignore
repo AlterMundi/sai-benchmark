@@ -199,8 +199,12 @@ RNA/data/raw/
 RNA/data/processed/
 RNA/data/datasets/
 RNA/data/mega_fire_dataset/
+RNA/data/mega_fire_dataset_*/
+RNA/data/verificator_dataset/images/
+RNA/data/verificator_dataset/logs/
 RNA/data/*/
 RNA/datasets/
+!RNA/data/verificator_dataset/dataset.yaml
 *.parquet
 *.arrow
 
@@ -252,7 +256,10 @@ RNA/runs/
 RNA/logs/
 RNA/training/logs/
 RNA/training/test_runs/
+RNA/training/runs/
 RNA/training/*.pt
+RNA/training/venv/
+RNA/verification_env/
 runs/
 
 # YOLO model weights

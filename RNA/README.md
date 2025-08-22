@@ -1,8 +1,8 @@
 # SAI Neural Network Architecture (RNA)
 
-**Early Fire Detection with Cascade Inference Pipeline**
+**Early Fire Detection with Two-Stage Inference Pipeline**
 
-SAI RNA implements a production-ready cascade architecture for early smoke and fire detection using distributed camera systems with temporal analysis.
+SAI RNA implements a production-ready two-stage architecture for early smoke and fire detection. **Stage A (Detector) completed**, **Stage B (Verificator) ready for training** on A100 server.
 
 ## 🏗️ Architecture Overview
 
@@ -17,39 +17,45 @@ SAI RNA implements a production-ready cascade architecture for early smoke and f
 🚨 Alarm Decision → Final Alert
 ```
 
-### Components
-- **YOLOv8-s Detector**: Fast ROI detection (smoke/fire bounding boxes)
-- **SmokeyNet-Lite Verifier**: Temporal consistency verification using LSTM
-- **Temporal Buffer**: Multi-frame sequence management per camera
-- **Persistence Tracker**: False positive reduction with alarm logic
+### Components Status
+- **YOLOv8-s Detector**: ✅ **TRAINED** - Fast ROI detection (smoke/fire bounding boxes)
+- **SmokeyNet CNN Verificator**: 🎯 **READY** - Binary classification (true/false positive)  
+- **Verificator Dataset**: ✅ **READY** - 25,363 samples balanced (30% FP, 70% true)
+- **Trained Model**: Available at `/data/sai-benchmark/RNA/training/runs/sai_detector_training/weights/best.pt`
 
-## 🚀 Quick Start Training
+## 🚀 Current Status & Next Steps
 
-### Prerequisites Check
+### ✅ Completed (Stage A)
 ```bash
-# Verify system readiness
-python3 check_training_readiness.py
+# ✅ MEGA Dataset: 64,000 images ready
+# ✅ YOLOv8-s Detector: Trained successfully on A100 (~8 hours)  
+# ✅ Verificator Dataset: 25,363 samples generated (8:17 minutes on A100)
+# ✅ Infrastructure: A100 server optimized for 8x speed improvement
+
+# Check detector model
+ssh -i ~/.ssh/sai-n8n-deploy -p 31939 root@88.207.86.56 \
+  'ls -la /data/sai-benchmark/RNA/training/runs/sai_detector_training/weights/'
 ```
 
-### Start Training (Autonomous 15-20 hours)
+### 🎯 Next Priority (Stage B)
 ```bash
-# Launch autonomous training
-./start_detector_training.sh
+# Train SmokeyNet CNN Verificator on A100 (estimated 2-4 hours)
+ssh -i ~/.ssh/sai-n8n-deploy -p 31939 root@88.207.86.56 \
+  'cd /data/sai-benchmark && python3 RNA/scripts/train_verificator.py \
+   --dataset RNA/data/verificator_dataset \
+   --batch-size 256 --gpu-optimized'
 
-# Monitor progress (optional)
-tail -f RNA/training/logs/detector_training.log
+# Monitor verificator training
+ssh -i ~/.ssh/sai-n8n-deploy -p 31939 root@88.207.86.56 \
+  'tail -f /data/sai-benchmark/RNA/training/runs/verificator/training.log'
 ```
 
-### Manual Training Steps
+### 🔗 Integration (Stage A + B)
 ```bash
-# Setup environment
-source RNA/training/venv/bin/activate
-
-# Train YOLOv8-s detector
-python RNA/training/detector_trainer.py --config RNA/configs/sai_cascade_config.yaml
-
-# Train SmokeyNet-Lite verifier (after detector)
-python RNA/training/verifier_trainer.py --config RNA/configs/sai_cascade_config.yaml
+# After Stage B completes - unified pipeline
+python RNA/inference/cascade_inference.py \
+  --detector RNA/training/runs/sai_detector_training/weights/best.pt \
+  --verificator RNA/training/runs/verificator_training/weights/best.pt
 ```
 
 ## 📊 Performance Targets

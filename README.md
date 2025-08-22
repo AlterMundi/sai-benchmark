@@ -13,58 +13,58 @@ SAI-Benchmark provides comprehensive benchmarking capabilities for vision-langua
 The project now includes a complete **two-stage neural network system** for early fire detection with **production-ready datasets**:
 
 ### 🏗️ **Dual-Stage Architecture**
-- **Stage A - Detector**: YOLOv8-s for high-recall fire/smoke detection (✅ **TRAINING ON A100**)
-- **Stage B - Verificator**: SmokeyNet-Lite CNN for false positive reduction (📋 **READY TO TRAIN**)
+- **Stage A - Detector**: YOLOv8-s for high-recall fire/smoke detection (✅ **COMPLETED ON A100**)
+- **Stage B - Verificator**: SmokeyNet CNN for false positive reduction (🎯 **READY TO TRAIN**)
 - **📊 Native Resolution**: 1440×808 optimized for camera feeds
 - **⚡ High Performance**: 25-40 img/s on A100, 15-25 img/s on RTX 3090
 - **🧠 Smart Pipeline**: Detector→Crops→Verificator→Final Decision
-- **🎯 Target Metrics**: 92% recall, 85% precision (70% FP reduction)
-- **📈 Production Ready**: Complete integration with monitoring and alerts
+- **🎯 Target Metrics**: 95% precision, 90% recall (70% FP reduction)
+- **📈 Production Ready**: Complete datasets and training infrastructure
 
-### Dataset Status (Latest Update: Aug 2025)
-| Dataset | Status | Images | Size | Source |
-|---------|--------|--------|------|--------|
-| **MEGA Fire Dataset** | ✅ Production | 64,000 | 7.6GB | Unified |
-| **FASDD** | ✅ Ready | 95,314 | 11.4GB | Kaggle |
-| **PyroNear-2024** | ✅ Ready | 33,600 | 3.1GB | HuggingFace |
-| **D-Fire** | ✅ Ready | 21,527 | 3.0GB | Manual |
-| **FIgLib** | ✅ Ready | 19,317 | 277MB | HuggingFace |
-| **NEMO** | ✅ Ready | 3,493 | 1.42GB | Kaggle |
+### Dataset Status (Latest Update: Aug 22, 2025)
+| Dataset | Status | Images | Size | Source | Purpose |
+|---------|--------|--------|------|--------|---------|
+| **MEGA Fire Dataset** | ✅ Production | 64,000 | 7.6GB | Unified | Detector Training |
+| **Verificator Dataset** | ✅ Production | 25,363 | ~2GB | Generated | CNN Training |
+| **FASDD** | ✅ Ready | 95,314 | 11.4GB | Kaggle | Detector Source |
+| **PyroNear-2024** | ✅ Ready | 33,600 | 3.1GB | HuggingFace | Detector Source |
+| **D-Fire** | ✅ Ready | 21,527 | 3.0GB | Manual | Detector Source |
+| **FIgLib** | ✅ Ready | 19,317 | 277MB | HuggingFace | Detector Source |
+| **NEMO** | ✅ Ready | 3,493 | 1.42GB | Kaggle | Detector Source |
 
-**Production Dataset**: 64,000 images (51.2K train, 12.8K val) at 1440×808 resolution  
-**Total Available**: 237,251 training images ready for immediate use
+**Production Datasets Ready**:
+- **Detector**: 64,000 images (51.2K train, 12.8K val) at 1440×808 resolution
+- **Verificator**: 25,363 samples (20.3K train, 5.1K val) at 224×224 resolution
+- **Total Available**: 237,251+ training images from 5 source datasets
 
 ### Quick Start with SAI RNA - Two-Stage Training
 
-#### Stage A: Detector Training (✅ Currently Running)
+#### Stage A: Detector Training (✅ COMPLETED)
 ```bash
-# Check system readiness
-python3 check_training_readiness.py
+# Detector training completed successfully on A100 server
+# Model available at: RNA/training/runs/sai_detector_training/weights/best.pt
+# Training time: ~8 hours on A100 (vs 39 hours projected on RTX 3090)
 
-# A100 optimized training (currently running - 6-9 hours)
-./start_detector_training_optimized.sh
-
-# Monitor training progress
-tail -f training_a100.log
+# Check trained detector status
+ssh -i ~/.ssh/sai-n8n-deploy -p 31939 root@88.207.86.56 \
+  'ls -la /data/sai-benchmark/RNA/training/runs/sai_detector_training/weights/'
 ```
 
-#### Stage B: Verificator Training (📋 Ready to Execute)
+#### Stage B: Verificator Training (🎯 READY TO EXECUTE)
 ```bash
-# Create verificator dataset from trained detector
-python3 RNA/scripts/create_verificator_dataset.py \
-    --yolo-dataset RNA/data/mega_fire_dataset \
-    --output RNA/data/verificator_dataset
+# Verificator dataset ready - completed in 8:17 minutes on A100
+# Dataset: 25,363 samples (20,292 train, 5,071 val)
+# Location: /data/sai-benchmark/RNA/data/verificator_dataset/
 
-# Train verificator CNN (2-4 hours on A100)
-python3 RNA/scripts/train_verificator.py \
-    --dataset RNA/data/verificator_dataset \
-    --gpu-optimized
+# Train SmokeyNet CNN on A100 (estimated 2-4 hours)
+ssh -i ~/.ssh/sai-n8n-deploy -p 31939 root@88.207.86.56 \
+  'cd /data/sai-benchmark && python3 RNA/scripts/train_verificator.py \
+   --dataset RNA/data/verificator_dataset \
+   --batch-size 256 --gpu-optimized'
 
 # Monitor verificator training
-tail -f RNA/training/runs/verificator/training.log
-
-# Performance test (2 epochs for timing)
-./test_2epochs_mega.sh
+ssh -i ~/.ssh/sai-n8n-deploy -p 31939 root@88.207.86.56 \
+  'tail -f /data/sai-benchmark/RNA/training/runs/verificator/training.log'
 ```
 
 #### Manual Training Steps
