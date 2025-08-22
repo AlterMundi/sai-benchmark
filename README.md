@@ -8,16 +8,18 @@ SAI-Benchmark provides comprehensive benchmarking capabilities for vision-langua
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-passing-green.svg)](tests/)
 
-## 🔥 NEW: SAI Neural Network Implementation
+## 🔥 NEW: SAI Neural Network Implementation - Two-Stage Architecture
 
-The project now includes a complete neural network implementation for early fire detection with **production-ready datasets**:
+The project now includes a complete **two-stage neural network system** for early fire detection with **production-ready datasets**:
 
-- **🎯 Cascade Architecture**: YOLOv8-s detector + SmokeyNet-Lite temporal verifier
-- **📊 Native Resolution**: 1440×808 optimized for camera feeds (2880×1616 scaled)
-- **⚡ High Performance**: 6-10 FPS on RTX 3090, 100-150ms latency
-- **🧠 Smart Verification**: Temporal consistency with 2-3 frame persistence
-- **📈 Production Ready**: Integrated with SAI-Benchmark framework
-- **📀 Complete Datasets**: 173K+ training images from 5 major fire detection datasets
+### 🏗️ **Dual-Stage Architecture**
+- **Stage A - Detector**: YOLOv8-s for high-recall fire/smoke detection (✅ **TRAINING ON A100**)
+- **Stage B - Verificator**: SmokeyNet-Lite CNN for false positive reduction (📋 **READY TO TRAIN**)
+- **📊 Native Resolution**: 1440×808 optimized for camera feeds
+- **⚡ High Performance**: 25-40 img/s on A100, 15-25 img/s on RTX 3090
+- **🧠 Smart Pipeline**: Detector→Crops→Verificator→Final Decision
+- **🎯 Target Metrics**: 92% recall, 85% precision (70% FP reduction)
+- **📈 Production Ready**: Complete integration with monitoring and alerts
 
 ### Dataset Status (Latest Update: Aug 2025)
 | Dataset | Status | Images | Size | Source |
@@ -32,21 +34,34 @@ The project now includes a complete neural network implementation for early fire
 **Production Dataset**: 64,000 images (51.2K train, 12.8K val) at 1440×808 resolution  
 **Total Available**: 237,251 training images ready for immediate use
 
-### Quick Start with SAI RNA
+### Quick Start with SAI RNA - Two-Stage Training
 
-#### Training Pipeline (Ready to Run)
+#### Stage A: Detector Training (✅ Currently Running)
 ```bash
 # Check system readiness
 python3 check_training_readiness.py
 
-# Start autonomous training (39 hours on RTX 3090, 6-9 hours on A100 optimized)
-./start_detector_training.sh
-
-# For A100 optimal performance (300GB+ storage required)
+# A100 optimized training (currently running - 6-9 hours)
 ./start_detector_training_optimized.sh
 
 # Monitor training progress
-tail -f RNA/training/logs/detector_training.log
+tail -f training_a100.log
+```
+
+#### Stage B: Verificator Training (📋 Ready to Execute)
+```bash
+# Create verificator dataset from trained detector
+python3 RNA/scripts/create_verificator_dataset.py \
+    --yolo-dataset RNA/data/mega_fire_dataset \
+    --output RNA/data/verificator_dataset
+
+# Train verificator CNN (2-4 hours on A100)
+python3 RNA/scripts/train_verificator.py \
+    --dataset RNA/data/verificator_dataset \
+    --gpu-optimized
+
+# Monitor verificator training
+tail -f RNA/training/runs/verificator/training.log
 
 # Performance test (2 epochs for timing)
 ./test_2epochs_mega.sh
@@ -67,7 +82,21 @@ python RNA/training/verifier_trainer.py --config RNA/configs/sai_cascade_config.
 python RNA/inference/cascade_inference.py --weights RNA/weights/
 ```
 
-See [RNA Documentation](RNA/README.md) for detailed implementation guide.
+### 📚 **Complete Documentation**
+
+#### Core Documentation
+- **[RNA Architecture Overview](RNA/README.md)** - Complete implementation guide
+- **[SAI Complete Architecture](RNA/docs/sai_arquitectura_completa.md)** - Full system design
+- **[Stage B Verificator Guide](RNA/docs/etapa_b_verificador.md)** - Verificator CNN documentation
+
+#### Training & Migration Docs
+- **[A100 Migration Plan](RNA/docs/a100_migration_plan.md)** - Cloud training optimization
+- **[Performance Estimates](RNA/docs/performance_estimates.md)** - Timing and hardware requirements
+- **[Project Roadmap](RNA/docs/roadmap.md)** - Current progress and milestones
+
+#### Technical Implementation
+- **[Model Architecture](RNA/docs/modelo10.md)** - Detailed architectural decisions
+- **[Training Metrics](RNA/docs/training_metrics_explained.md)** - Understanding model performance
 
 ## 🔄 SAI Temporal Workflow: Distributed Camera System
 
