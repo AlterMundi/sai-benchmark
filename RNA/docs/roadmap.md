@@ -74,7 +74,9 @@
 - **A100 Server 1 (32GB)**: ssh -p 3108 root@104.189.178.113 - Dataset staging
 - **A100 Server 2 (300GB)**: ssh -p 31939 root@88.207.86.56 - Optimal training server
 - **Performance**: Full cache enabled, batch size 20, estimated 6-9 hours training
-- **Tested Metrics**: Epoch 2 - Precision: 0.649, Recall: 0.857, mAP50: 0.733  
+- **Tested Metrics**: Epoch 2 - Precision: 0.649, Recall: 0.857, mAP50: 0.733
+- **Transfer Strategy**: Direct tar.gz (5.7GB) successfully transferring to 300GB server
+- **Dataset Creation Alternative**: Cloud recreation abandoned due to Kaggle API restrictions  
 
 ### Phase 5: Model Training (Etapa B - Verifier)
 - [ ] ❌ **Prepare FIgLib temporal sequences**

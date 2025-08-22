@@ -10,6 +10,8 @@ Migration plan for SAI Fire Detection training from local RTX 3090 to cloud A100
 - **Performance Boost**: Full cache + batch=20 vs limited cache + batch=8
 - **Training time**: 35+ hours → **6-9 hours** (4-6x faster expected)
 - **Setup time**: 3 hours total (parallel preparation strategy)
+- **Transfer Strategy**: Direct tar.gz transfer (5.7GB) completed successfully
+- **Dataset Creation**: Abandoned cloud recreation due to Kaggle API restrictions
 
 ---
 

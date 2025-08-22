@@ -294,6 +294,11 @@ kaggle.json
 /mnt/n8n-data/
 /mnt/*/sai-benchmark/
 
+# Dataset creation scripts (cloud server specific)
+create_dataset_on_server.sh
+dataset_creation.log
+extract_and_setup_dataset.sh
+
 # Training scripts (only keep in NVMe)
 start_detector_training.sh
 start_test_training.sh
