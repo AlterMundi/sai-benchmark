@@ -35,7 +35,7 @@ gpu_time = 1/11.8 it/s = ~0.085s per batch
 
 ### Source → Destination
 - **From**: `/mnt/raid1/sai-benchmark/` (RAID1 mechanical)
-- **To**: `/opt/sai-benchmark-nvme/` (NVMe SSD)
+- **To**: `/mnt/n8n-data/sai-benchmark/` (NVMe SSD)
 
 ### Performance Comparison
 | Metric | RAID1 HDD | NVMe SSD | Improvement |
@@ -50,7 +50,7 @@ gpu_time = 1/11.8 it/s = ~0.085s per batch
 
 #### NVMe (Speed-Critical)
 ```
-/opt/sai-benchmark-nvme/
+/mnt/n8n-data/sai-benchmark/
 ├── RNA/data/mega_fire_dataset/     # 7.6GB - Training dataset
 ├── RNA/configs/                    # Configurations
 ├── RNA/training/venv/              # Virtual environment
@@ -82,7 +82,7 @@ Migration: ✅ FEASIBLE
 ### Step 2: Strategic Copy
 ```bash
 # Dataset migration (1m39s)
-cp -r /mnt/raid1/sai-benchmark/RNA/data/mega_fire_dataset /opt/sai-benchmark-nvme/RNA/data/
+cp -r /mnt/raid1/sai-benchmark/RNA/data/mega_fire_dataset /mnt/n8n-data/sai-benchmark/RNA/data/
 # Speed: ~77 MB/s average
 
 # Essential files
@@ -92,7 +92,7 @@ cp -r configs/ scripts/ docs/ training/venv/ start_*.sh
 ### Step 3: Configuration Update
 ```yaml
 # Updated dataset.yaml path
-path: /opt/sai-benchmark-nvme/RNA/data/mega_fire_dataset
+path: /mnt/n8n-data/sai-benchmark/RNA/data/mega_fire_dataset
 ```
 
 ### Step 4: Integrity Verification
@@ -134,7 +134,7 @@ best_case_time = 8-10 hours  # 50-60% improvement
 ### 🚀 Ready for Training
 ```bash
 # Launch optimized training from NVMe
-cd /opt/sai-benchmark-nvme
+cd /mnt/n8n-data/sai-benchmark
 ./start_detector_training.sh
 
 # Expected: 10-13 hours (vs 15-20 hours previous)
@@ -173,7 +173,7 @@ migration_roi = {
 
 ### Backup Strategy
 - **Active development**: RAID1 (/mnt/raid1/sai-benchmark/)
-- **High-speed training**: NVMe (/opt/sai-benchmark-nvme/)
+- **High-speed training**: NVMe (/mnt/n8n-data/sai-benchmark/)
 - **Automatic sync**: Critical results copied back to RAID1
 
 ## 📝 Lessons Learned

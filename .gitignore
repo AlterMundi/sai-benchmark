@@ -290,6 +290,14 @@ kaggle.json
 *.key
 *.secret
 
+# NVMe working directories
+/mnt/n8n-data/
+/mnt/*/sai-benchmark/
+
+# Training scripts (only keep in NVMe)
+start_detector_training.sh
+start_test_training.sh
+
 # IDE and editor files
 *.sublime-*
 .atom/
