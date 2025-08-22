@@ -1,0 +1,306 @@
+# SAINet v1.0 Comprehensive Evaluation Suite
+# Ultra-Creative AI Fire Detection Neural Network
+# Comprehensive benchmark for two-stage architecture: Detector + Verificator
+
+name: "SAINet v1.0 Fire Detection Evaluation"
+description: "Comprehensive benchmark suite for SAI Neural Network v1.0 - dual-stage fire detection system"
+version: "1.0.0"
+author: "SAI Team"
+created: "2025-08-22"
+
+# Model configurations to test
+models:
+  - name: "sainet_detector_only"
+    type: "sai_detector"
+    description: "YOLOv8-s detector stage only (Stage A)"
+    config:
+      weights_path: "RNA/models/detector_best.pt"
+      confidence_threshold: 0.3
+      nms_threshold: 0.45
+      
+  - name: "sainet_verificator_only" 
+    type: "sai_verificator"
+    description: "SmokeyNet-Lite verificator stage only (Stage B)"
+    config:
+      weights_path: "RNA/models/verificator_best.pt"
+      confidence_threshold: 0.5
+      
+  - name: "sainet_complete_system"
+    type: "sai_cascade"
+    description: "Complete two-stage SAINet system (Detector + Verificator)"
+    config:
+      detector_weights: "RNA/models/detector_best.pt"
+      verificator_weights: "RNA/models/verificator_best.pt"
+      detector_threshold: 0.3
+      verificator_threshold: 0.5
+      decision_logic: "combined"
+
+# Test datasets
+datasets:
+  - name: "mega_fire_validation"
+    type: "yolo_detection"
+    description: "MEGA fire dataset validation set (12.8K images)"
+    path: "RNA/data/mega_fire_dataset/images/val"
+    labels_path: "RNA/data/mega_fire_dataset/labels/val"
+    classes: ["fire", "smoke"]
+    
+  - name: "cross_dataset_fasdd"
+    type: "yolo_detection" 
+    description: "FASDD subset for cross-validation"
+    path: "RNA/data/mega_fire_dataset/images/val"
+    filter: "fasdd_*"
+    
+  - name: "cross_dataset_pyronear"
+    type: "yolo_detection"
+    description: "PyroNear subset for geographic diversity"
+    path: "RNA/data/mega_fire_dataset/images/val"
+    filter: "pyro_*"
+    
+  - name: "false_positive_test"
+    type: "classification"
+    description: "Curated false positive triggers (clouds, vapor, reflections)"
+    path: "RNA/data/false_positive_test"
+    classes: ["false_positive"]
+
+# Performance test scenarios
+test_scenarios:
+  - name: "clear_weather_fires"
+    description: "Fire detection in clear weather conditions"
+    dataset: "mega_fire_validation"
+    filter_conditions:
+      weather: "clear"
+      visibility: "high"
+    expected_performance:
+      precision: ">= 0.90"
+      recall: ">= 0.95"
+      
+  - name: "smoky_conditions"
+    description: "Fire detection in heavy smoke conditions"
+    dataset: "mega_fire_validation" 
+    filter_conditions:
+      smoke_density: "high"
+    expected_performance:
+      precision: ">= 0.80"
+      recall: ">= 0.90"
+      
+  - name: "night_fires"
+    description: "Fire detection during night/low light"
+    dataset: "mega_fire_validation"
+    filter_conditions:
+      time_of_day: "night"
+      lighting: "low"
+    expected_performance:
+      precision: ">= 0.75"
+      recall: ">= 0.85"
+      
+  - name: "small_distant_fires"
+    description: "Detection of small or distant fire sources"
+    dataset: "mega_fire_validation"
+    filter_conditions:
+      fire_size: "small"
+      distance: "far"
+    expected_performance:
+      precision: ">= 0.70"
+      recall: ">= 0.80"
+      
+  - name: "large_close_fires"
+    description: "Detection of large, close fire sources"
+    dataset: "mega_fire_validation"
+    filter_conditions:
+      fire_size: "large"
+      distance: "close"
+    expected_performance:
+      precision: ">= 0.95"
+      recall: ">= 0.98"
+      
+  - name: "false_positive_rejection"
+    description: "Rejection of common false positive triggers"
+    dataset: "false_positive_test"
+    test_type: "negative_detection"
+    expected_performance:
+      false_positive_rate: "<= 0.05"
+      specificity: ">= 0.95"
+
+# Evaluation metrics
+metrics:
+  detection_metrics:
+    - name: "mean_average_precision"
+      description: "mAP@0.5 for object detection"
+      type: "detection"
+      parameters:
+        iou_threshold: 0.5
+      target: ">= 0.80"
+      
+    - name: "precision"
+      description: "Detection precision"
+      type: "classification"
+      target: ">= 0.85"
+      
+    - name: "recall" 
+      description: "Detection recall (sensitivity)"
+      type: "classification"
+      target: ">= 0.90"
+      
+    - name: "f1_score"
+      description: "F1 score (harmonic mean of precision and recall)"
+      type: "classification"
+      target: ">= 0.87"
+      
+    - name: "false_positive_rate"
+      description: "False positive rate"
+      type: "classification"
+      target: "<= 0.10"
+      
+  performance_metrics:
+    - name: "inference_latency"
+      description: "Per-image inference time"
+      type: "performance"
+      unit: "milliseconds"
+      target: "<= 50"
+      
+    - name: "throughput"
+      description: "Images processed per second"
+      type: "performance" 
+      unit: "fps"
+      target: ">= 20"
+      
+    - name: "memory_usage"
+      description: "GPU memory usage during inference"
+      type: "performance"
+      unit: "MB"
+      target: "<= 4000"
+      
+    - name: "cpu_utilization"
+      description: "CPU utilization percentage"
+      type: "performance"
+      unit: "percent" 
+      target: "<= 50"
+
+  system_metrics:
+    - name: "end_to_end_latency"
+      description: "Complete pipeline processing time"
+      type: "system"
+      unit: "milliseconds"
+      target: "<= 100"
+      
+    - name: "verification_improvement"
+      description: "FP reduction by verificator stage"
+      type: "system"
+      unit: "percent"
+      target: ">= 70"
+      
+    - name: "system_precision"
+      description: "Overall system precision (detector + verificator)"
+      type: "system"
+      target: ">= 0.90"
+
+# Test execution configuration
+execution:
+  batch_size: 16
+  num_workers: 4
+  device: "auto"  # auto-detect CUDA/CPU
+  mixed_precision: true
+  compile_model: true  # PyTorch 2.0+ optimization
+  
+  # Test repetitions for statistical significance
+  repetitions: 3
+  confidence_interval: 0.95
+  
+  # Resource monitoring
+  monitor_resources: true
+  profile_memory: true
+  profile_compute: true
+
+# Reporting configuration  
+reporting:
+  output_format: ["json", "csv", "html", "pdf"]
+  include_visualizations: true
+  generate_confusion_matrix: true
+  generate_pr_curves: true
+  generate_roc_curves: true
+  
+  # Detailed analysis
+  per_class_analysis: true
+  error_analysis: true
+  failure_case_analysis: true
+  
+  # Comparison reports
+  compare_models: true
+  baseline_comparison: true
+  
+  # Export results
+  export_predictions: true
+  export_metrics: true
+  export_timing_data: true
+
+# Success criteria for automatic evaluation
+success_criteria:
+  tier_1_excellence:
+    description: "Publication-ready performance"
+    requirements:
+      f1_score: ">= 0.90"
+      precision: ">= 0.85"
+      recall: ">= 0.95" 
+      false_positive_rate: "<= 0.05"
+      inference_latency: "<= 50"
+    action: "proceed_to_publication"
+    
+  tier_2_good:
+    description: "Good performance, external benchmark recommended"
+    requirements:
+      f1_score: ">= 0.80"
+      precision: ">= 0.75"
+      recall: ">= 0.90"
+      false_positive_rate: "<= 0.15"
+    action: "proceed_to_external_benchmark"
+    
+  tier_3_improvement:
+    description: "Needs model improvement"
+    requirements:
+      f1_score: "< 0.80"
+    action: "return_to_training"
+
+# Additional test configurations
+stress_tests:
+  - name: "high_throughput_test"
+    description: "Test system under high image throughput"
+    config:
+      batch_sizes: [1, 8, 16, 32, 64]
+      concurrent_streams: [1, 2, 4, 8]
+      duration: "5 minutes"
+      
+  - name: "memory_stress_test"
+    description: "Test memory usage under various loads"
+    config:
+      image_sizes: ["640x640", "1440x808", "1920x1080", "2880x1616"]
+      batch_sizes: [1, 16, 32]
+      
+  - name: "long_running_test"
+    description: "Test system stability over extended periods"
+    config:
+      duration: "2 hours"
+      image_rate: "1 fps"
+      monitor_memory_leaks: true
+
+# Custom SAINet-specific tests
+sainet_specific_tests:
+  - name: "stage_comparison"
+    description: "Compare detector-only vs complete system performance"
+    models: ["sainet_detector_only", "sainet_complete_system"]
+    metrics: ["precision", "recall", "false_positive_rate"]
+    
+  - name: "verificator_effectiveness"
+    description: "Measure verificator's false positive reduction"
+    baseline: "sainet_detector_only"
+    enhanced: "sainet_complete_system"
+    target_improvement: 70  # percent FP reduction
+    
+  - name: "decision_threshold_analysis"
+    description: "Optimize decision thresholds for best performance"
+    detector_thresholds: [0.1, 0.2, 0.3, 0.4, 0.5]
+    verificator_thresholds: [0.3, 0.4, 0.5, 0.6, 0.7]
+    
+  - name: "temporal_consistency"
+    description: "Test temporal consistency in video sequences"
+    dataset: "temporal_fire_sequences"
+    metrics: ["frame_consistency", "detection_stability"]
