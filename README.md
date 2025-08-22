@@ -94,9 +94,10 @@ python RNA/inference/cascade_inference.py --weights RNA/weights/
 - **[Performance Estimates](RNA/docs/performance_estimates.md)** - Timing and hardware requirements
 - **[Project Roadmap](RNA/docs/roadmap.md)** - Current progress and milestones
 
-#### Technical Implementation
+#### Technical Implementation  
 - **[Model Architecture](RNA/docs/modelo10.md)** - Detailed architectural decisions
 - **[Training Metrics](RNA/docs/training_metrics_explained.md)** - Understanding model performance
+- **[Model Deployment Guide](RNA/docs/modelo_deployment_guide.md)** - Model transfer and versioning strategies
 
 ## 🔄 SAI Temporal Workflow: Distributed Camera System
 
