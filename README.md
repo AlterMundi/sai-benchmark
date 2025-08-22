@@ -19,16 +19,18 @@ The project now includes a complete neural network implementation for early fire
 - **📈 Production Ready**: Integrated with SAI-Benchmark framework
 - **📀 Complete Datasets**: 173K+ training images from 5 major fire detection datasets
 
-### Dataset Status (Latest Update)
+### Dataset Status (Latest Update: Aug 2025)
 | Dataset | Status | Images | Size | Source |
 |---------|--------|--------|------|--------|
+| **MEGA Fire Dataset** | ✅ Production | 64,000 | 7.6GB | Unified |
 | **FASDD** | ✅ Ready | 95,314 | 11.4GB | Kaggle |
 | **PyroNear-2024** | ✅ Ready | 33,600 | 3.1GB | HuggingFace |
 | **D-Fire** | ✅ Ready | 21,527 | 3.0GB | Manual |
 | **FIgLib** | ✅ Ready | 19,317 | 277MB | HuggingFace |
 | **NEMO** | ✅ Ready | 3,493 | 1.42GB | Kaggle |
 
-**Total Available**: 173,251 training images ready for immediate use
+**Production Dataset**: 64,000 images (51.2K train, 12.8K val) at 1440×808 resolution  
+**Total Available**: 237,251 training images ready for immediate use
 
 ### Quick Start with SAI RNA
 
@@ -37,11 +39,14 @@ The project now includes a complete neural network implementation for early fire
 # Check system readiness
 python3 check_training_readiness.py
 
-# Start autonomous training (15-20 hours)
+# Start autonomous training (39 hours on RTX 3090, 7-11 hours on A100)
 ./start_detector_training.sh
 
 # Monitor training progress
 tail -f RNA/training/logs/detector_training.log
+
+# Performance test (2 epochs for timing)
+./test_2epochs_mega.sh
 ```
 
 #### Manual Training Steps
