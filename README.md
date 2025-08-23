@@ -8,18 +8,31 @@ SAI-Benchmark provides comprehensive benchmarking capabilities for vision-langua
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-passing-green.svg)](tests/)
 
-## 🔥 NEW: SAI Neural Network Implementation - Two-Stage Architecture
+## 🔥 SAI Neural Network Implementation - Two-Stage Architecture + Critical Findings
 
-The project now includes a complete **two-stage neural network system** for early fire detection with **production-ready datasets**:
+### 🚨 **CRITICAL DISCOVERY: System Requires Retraining for Production Use**
 
-### 🏗️ **Dual-Stage Architecture**
-- **Stage A - Detector**: YOLOv8-s for high-recall fire/smoke detection (✅ **COMPLETED ON A100**)
-- **Stage B - Verificator**: SmokeyNet CNN for false positive reduction (🎯 **READY TO TRAIN**)
-- **📊 Native Resolution**: 1440×808 optimized for camera feeds
-- **⚡ High Performance**: 25-40 img/s on A100, 15-25 img/s on RTX 3090
-- **🧠 Smart Pipeline**: Detector→Crops→Verificator→Final Decision
-- **🎯 Target Metrics**: 95% precision, 90% recall (70% FP reduction)
-- **📈 Production Ready**: Complete datasets and training infrastructure
+**Latest comprehensive benchmarking (Aug 23, 2025) revealed critical limitations:**
+- **🌐 Limited Generalization**: 89% smoke recall on training domain, 0-15% cross-domain  
+- **🔥 Fire-Biased Training**: 6.6:1 fire/smoke ratio instead of smoke-first approach
+- **⚡ Threshold Sensitivity**: Extreme sensitivity requiring domain-specific calibration
+- **🏗️ Architecture Gap**: Current EfficientNet-B0 vs specialized SmokeyNet+LSTM needed
+
+**Result**: Current system **not production-ready** for life-safety applications.
+
+### 🎯 **Comprehensive Retraining Plan Available**
+See **[VOLVER_A_EMPEZAR.md](VOLVER_A_EMPEZAR.md)** for complete SAINet v2.0 retraining strategy:
+- **Smoke-first priority** (60% smoke, 40% fire)
+- **SmokeyNet+LSTM temporal architecture** for Stage B
+- **Cross-domain robustness** with multi-dataset training  
+- **Target: >80% smoke recall cross-domain**
+
+### 🏗️ **Current System Architecture (v1.0)**
+- **Stage A - Detector**: YOLOv8-s (✅ **TRAINED** - limited generalization)
+- **Stage B - Verificator**: EfficientNet-B0 CNN (✅ **TRAINED** - needs SmokeyNet+LSTM)
+- **📊 Performance**: 79.7% recall MEGA domain, 0-50% cross-domain
+- **⚡ Speed**: 73-77 img/s benchmark performance  
+- **🎯 Status**: Research prototype, requires v2.0 for production
 
 ### Dataset Status (Latest Update: Aug 22, 2025)
 | Dataset | Status | Images | Size | Source | Purpose |
@@ -98,6 +111,33 @@ python RNA/inference/cascade_inference.py --weights RNA/weights/
 - **[Model Architecture](RNA/docs/modelo10.md)** - Detailed architectural decisions
 - **[Training Metrics](RNA/docs/training_metrics_explained.md)** - Understanding model performance
 - **[Model Deployment Guide](RNA/docs/modelo_deployment_guide.md)** - Model transfer and versioning strategies
+
+### 📊 **Comprehensive Benchmark Results (Aug 23, 2025)**
+
+**Major benchmarking effort revealed critical system limitations:**
+
+#### **SAINet Two-Stage System Benchmarks**
+- **Comprehensive Benchmark**: 79.7% recall, 33.1% precision (MEGA domain)
+- **Threshold Optimization**: Tested 0.5, 0.25, 0.15, 0.05 - optimal at 0.05
+- **Corrected Mapping**: Fixed class mapping issues, performance validated
+- **Ultimate Configuration**: YOLOv8-s (0.1) + EfficientNet-B0 (0.05)
+
+#### **Detector-Only Benchmarks**  
+- **D-Fire Dataset**: 1.9% recall (critical domain gap identified)
+- **MEGA Dataset Smoke**: 89.2% recall (confirms model works in training domain)
+- **Cross-Domain Analysis**: 70% MEGA → 54% D-Fire → 40% FASDD (generalization decay)
+
+#### **Critical Findings**
+- **🚨 Smoke Detection Failure**: 0% smoke recall cross-domain (safety-critical issue)  
+- **🌐 Domain Gap**: Model overfitted to training domain
+- **⚡ Threshold Sensitivity**: Performance drops from 79.7% → 0.1% with wrong threshold
+- **🔧 Architecture Mismatch**: EfficientNet-B0 insufficient for temporal smoke analysis
+
+#### **Benchmark Artifacts Available**
+- `sainet_ultimate_corrected_results.json` - Complete SAINet system results
+- `dfire_detector_corrected_results.json` - Cross-domain detector evaluation  
+- `urgent_smoke_mega_results.json` - Smoke-specific analysis
+- `model_generalization_audit_results.json` - Multi-domain performance audit
 
 ## 🔄 SAI Temporal Workflow: Distributed Camera System
 

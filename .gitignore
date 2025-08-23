@@ -310,6 +310,32 @@ extract_and_setup_dataset.sh
 start_detector_training.sh
 start_test_training.sh
 
+# Benchmark artifacts and environments
+benchmark_env/
+*_results.json
+*_benchmark*.py
+*_audit*.py
+*_test.py
+*_diagnostic*.py
+diagnose_*.py
+urgent_*.py
+run_*.py
+dfire_*.py
+sainet_*.py
+model_*.py
+threshold_*.py
+verificator_*.py
+*.json
+!package.json
+!RNA/configs/*.json
+!RNA/data/verificator_dataset/dataset.yaml
+!RNA/docs/*.json
+
+# Benchmark reports and analysis
+*_report.md
+*_analysis.md
+!VOLVER_A_EMPEZAR.md
+
 # IDE and editor files
 *.sublime-*
 .atom/
