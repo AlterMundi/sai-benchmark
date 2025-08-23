@@ -18,13 +18,14 @@
 - **Local Server**: `/mnt/n8n-data/sai-benchmark/` (16 cores, 31GB RAM, RTX 3090, backup only)
 - **Workflow**: A100 exclusive for all training/processing → Results synced to local
 
-## 📍 CURRENT STATUS: OPTIMIZATION COMPLETED - SAINet Performance Maximized
+## 📍 CURRENT STATUS: BENCHMARKING COMPLETED - CRITICAL LIMITATIONS DISCOVERED
 
-### ✅ **OPTIMIZATION RESULTS**: Comprehensive Benchmark Study Completed
-**Achievement**: Complete SAINet system benchmarked through 6 different configurations
+### ✅ **COMPREHENSIVE BENCHMARKING RESULTS**: System Evaluation Completed
+**Achievement**: Complete SAINet system benchmarked through 6 different configurations + cross-domain analysis
 **Final Configuration**: Stage A (YOLOv8-s) threshold 0.1 + Stage B (EfficientNet-B0) threshold 0.05
-**Final Performance**: 20.3% false negatives (1,272 incendios), 79.7% recall, 33.1% precision
-**Status**: SAINet performance MAXIMIZED within current architecture constraints
+**MEGA Domain Performance**: 79.7% recall, 33.1% precision (20.3% false negatives)
+**Cross-Domain Performance**: 0-50% recall degradation - **CRITICAL GENERALIZATION FAILURE**
+**Status**: System v1.0 NOT PRODUCTION-READY - Requires complete retraining approach
 
 #### 🔥 Detector Training (Stage A) - COMPLETED
 - [x] ✅ **MEGA Dataset Creation** (64K images, 4 source datasets combined)
@@ -105,6 +106,194 @@
 2. **Production Validation** - MEGA benchmark with optimized threshold
 3. **Safety Certification** - Validate system meets life-safety requirements  
 4. **Production Deployment** - Deploy optimized system with confidence
+
+---
+
+## 🚨 **CRITICAL FINDINGS & RETRAINING PLAN** (August 23, 2025)
+
+### ❌ **PRODUCTION READINESS ASSESSMENT: NOT READY**
+
+#### **Critical Limitations Discovered**
+- **🌐 Domain Gap Issue**: 89% smoke recall MEGA domain vs 0-15% cross-domain
+- **🔥 Fire-Biased Training**: 6.6:1 fire/smoke ratio instead of required smoke-first approach
+- **⚡ Threshold Sensitivity**: Extreme calibration needs per domain (79.7% → 0.1% performance drop)
+- **🏗️ Architecture Mismatch**: EfficientNet-B0 insufficient vs specialized SmokeyNet+LSTM needed
+
+#### **🚨 Safety-Critical Impact**
+```
+Cross-Domain Performance Analysis:
+├── MEGA (Training): 89.2% smoke recall ✅
+├── D-Fire (Real-world): 0.0% smoke recall ❌  
+├── FASDD (Academic): 15% smoke recall ❌
+└── Smoke = First Fire Indicator → System FAILS at primary objective
+```
+
+### 📋 **COMPLETE RETRAINING PLAN AVAILABLE**
+
+**See [VOLVER_A_EMPEZAR.md](../../VOLVER_A_EMPEZAR.md) for comprehensive SAINet v2.0 strategy:**
+
+#### **🎯 SAINet v2.0 Objectives**
+- **Smoke-First Priority**: 60% smoke, 40% fire dataset ratio  
+- **Cross-Domain Robustness**: >80% smoke recall across all domains
+- **SmokeyNet+LSTM Architecture**: Temporal analysis for Stage B
+- **Multi-Domain Training**: 6+ datasets with domain adaptation
+- **Production Timeline**: 12 weeks complete retraining
+
+#### **🏗️ v2.0 Architecture Changes**
+```yaml
+Stage A - Smoke-Priority Detector:
+  model: YOLOv8-s (modified loss weights)
+  class_weights: {smoke: 2.5, fire: 1.0}  # Smoke priority
+  training_strategy: curriculum_learning_smoke_first
+  
+Stage B - SmokeyNet+LSTM Temporal:
+  architecture: SmokeyNet + bidirectional_LSTM
+  sequence_length: 5_frames
+  temporal_analysis: smoke_movement_patterns
+  attention_mechanism: temporal_attention
+```
+
+#### **📊 Expected v2.0 Performance**
+```
+Target Metrics (Cross-Domain):
+├── Smoke Recall: >80% (vs current 0-15%) 
+├── Fire Recall: >85% (maintain current level)
+├── System Precision: >40% (vs current 33%)
+├── False Negatives: <15% (vs current 20-98%)
+└── Production Readiness: ACHIEVED
+```
+
+---
+
+## 🗂️ **REPOSITORY REORGANIZATION PLAN** (August 23, 2025)
+
+### 🚨 **CURRENT STRUCTURE PROBLEM**
+**Repository Status**: CHAOTIC - 50+ files in root directory, impossible to navigate
+- **Benchmark Scripts**: 15+ scripts scattered in root  
+- **Results Mixed**: JSON results alongside source code
+- **No Organization**: Cannot find specific functionality quickly
+- **Development Artifacts**: Temporary files not cleaned up
+
+### 🏗️ **PROPOSED PROFESSIONAL STRUCTURE**
+```
+sai-benchmark/
+├── README.md, LICENSE, requirements.txt     # Core project files only
+│
+├── src/                                     # 🏗️ All source code  
+│   ├── sai_benchmark/                       # Framework core
+│   └── rna/                                 # SAI RNA neural network
+│       ├── configs/                         # Model configurations
+│       ├── models/                          # Architecture definitions
+│       ├── training/                        # Training scripts  
+│       ├── inference/                       # Inference pipeline
+│       └── evaluation/                      # Evaluation tools
+│
+├── benchmarks/                              # 🧪 Organized benchmark scripts
+│   ├── framework/                           # General benchmarking
+│   ├── sainet/                             # SAINet-specific benchmarks
+│   │   ├── comprehensive/                   # Complete system tests
+│   │   ├── threshold_optimization/          # Threshold testing
+│   │   ├── architecture_validation/         # Architecture tests  
+│   │   ├── detector_only/                  # Standalone detector tests
+│   │   ├── cross_domain/                   # Domain generalization
+│   │   ├── smoke_analysis/                 # Smoke-specific analysis
+│   │   └── diagnostics/                    # Debug & diagnostic tools
+│   └── vision/                             # General vision benchmarks
+│
+├── results/                                 # 📊 All results organized
+│   ├── sainet/                             # SAINet results by category
+│   ├── reports/                            # Generated analysis reports
+│   └── archive/                            # Historical results by date
+│
+├── scripts/                                 # 🛠️ Utility scripts organized  
+│   ├── setup/                              # Environment setup
+│   ├── data_preparation/                   # Data handling
+│   ├── training/                           # Training utilities
+│   ├── deployment/                         # Production deployment
+│   └── utilities/                          # General utilities
+│
+├── configs/                                 # ⚙️ Centralized configuration
+│   ├── benchmarks/                         # Benchmark configs  
+│   ├── models/                             # Model configs
+│   ├── deployment/                         # Deployment configs
+│   └── suites/                             # Test suite configs
+│
+├── tests/                                   # 🧪 Test suite  
+├── examples/                               # 📖 Usage examples
+├── research/                               # 🔬 Research & experiments
+│   ├── experiments/                        # Experimental code
+│   ├── prototypes/                         # Prototype implementations  
+│   └── deprecated/                         # Legacy/old code
+└── deployment/                             # 🚀 Production deployment
+    ├── docker/                             # Container configs
+    ├── kubernetes/                         # K8s configs  
+    └── monitoring/                         # Observability
+```
+
+### 🔄 **MIGRATION PLAN** (2-3 days)
+```
+Phase 1: Core Restructuring (Day 1)
+├── Create new directory structure
+├── Move core source code to src/
+├── Reorganize RNA module properly  
+└── Update import paths
+
+Phase 2: Benchmark Organization (Day 1-2)  
+├── Categorize all 15+ benchmark scripts
+├── Move to appropriate benchmark subdirectories
+├── Consolidate duplicate/similar scripts
+└── Create results directory structure
+
+Phase 3: Scripts & Configuration (Day 2)
+├── Categorize utility scripts by function
+├── Move to appropriate scripts/ subdirectories  
+├── Consolidate configuration files
+└── Update script paths and references
+
+Phase 4: Documentation & Cleanup (Day 2-3)
+├── Update all README files
+├── Fix import statements throughout
+├── Update .gitignore properly
+├── Remove obsolete/temporary files
+└── Validate repository functionality
+```
+
+### 📋 **SPECIFIC FILE MIGRATIONS**
+
+#### **Root → benchmarks/sainet/**
+- `sainet_comprehensive_benchmark.py` → `benchmarks/sainet/comprehensive/`
+- `sainet_*_threshold_benchmark.py` → `benchmarks/sainet/threshold_optimization/`  
+- `sainet_*_corrected_benchmark.py` → `benchmarks/sainet/architecture_validation/`
+- `*detector_only_benchmark.py` → `benchmarks/sainet/detector_only/`
+- `model_generalization_audit.py` → `benchmarks/sainet/cross_domain/`
+- `urgent_smoke_*.py` → `benchmarks/sainet/smoke_analysis/`
+- `diagnose_*.py` → `benchmarks/sainet/diagnostics/`
+
+#### **Root → results/sainet/**  
+- `*_results.json` → `results/sainet/{category}/`
+- `benchmark_results*/` → `results/sainet/comprehensive/`
+- `*_report.md` → `results/reports/`
+
+#### **Root → scripts/**
+- `check_training_readiness.py` → `scripts/setup/`
+- `extract_and_setup_dataset.sh` → `scripts/data_preparation/`
+- `start_*_training.sh` → `scripts/training/`
+
+### 🎯 **BENEFITS OF REORGANIZATION**
+- **🔍 Easy Navigation**: Find any script in seconds
+- **📁 Logical Organization**: Related files grouped together
+- **🧹 Clean Root**: Only essential project files  
+- **📊 Results Management**: Organized by category and date
+- **🚀 Production Ready**: Professional structure for deployment
+- **👥 Developer Friendly**: Clear separation of concerns
+- **🔧 Maintainable**: Easier debugging and updates
+
+### ✅ **REORGANIZATION APPROVAL CRITERIA**
+- [ ] All functionality preserved after moves
+- [ ] Import statements updated and working  
+- [ ] No orphaned files in root directory
+- [ ] Clear navigation to all components
+- [ ] Professional repository structure achieved
 
 ---
 

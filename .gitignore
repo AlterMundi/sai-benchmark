@@ -339,3 +339,7 @@ verificator_*.py
 # IDE and editor files
 *.sublime-*
 .atom/
+
+# NEW REORGANIZED STRUCTURE ARTIFACTS
+artifacts/
+!artifacts/.gitkeep

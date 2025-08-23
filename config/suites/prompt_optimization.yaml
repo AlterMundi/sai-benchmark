@@ -1,0 +1,45 @@
+name: "Prompt Optimization Study"
+description: "A/B test different prompt strategies to find optimal prompting approach"
+version: "1.0"
+
+# Multiple prompt variations
+prompts:
+  - "early_fire_json"
+  - "wildfire_confidence"
+  - "detailed_sequence_analysis"
+  - "llama_format"
+  - "llava_format"
+  - "minicpm_format"
+  - "gemma_format"
+  - "mistral_format"
+
+# Single model for controlled comparison
+models:
+  - "qwen2.5vl:7b"
+
+# Available datasets
+datasets:
+  - "test_sequences"
+  - "images"
+
+# Focus on accuracy and parsing metrics
+metrics:
+  - "accuracy"
+  - "precision"
+  - "recall"
+  - "f1_score"
+  - "parse_success_rate"
+  - "bbox_iou"
+  - "latency"
+
+# Standard engine settings
+engine_config:
+  timeout: 120
+  max_retries: 2
+  temperature: 0.1
+
+# Test configuration
+test_config:
+  max_images_per_sequence: 7
+  iou_threshold: 0.4
+  confidence_threshold: 0.5

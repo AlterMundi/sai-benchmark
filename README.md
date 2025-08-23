@@ -50,6 +50,30 @@ See **[VOLVER_A_EMPEZAR.md](VOLVER_A_EMPEZAR.md)** for complete SAINet v2.0 retr
 - **Verificator**: 25,363 samples (20.3K train, 5.1K val) at 224×224 resolution
 - **Total Available**: 237,251+ training images from 5 source datasets
 
+## 📂 **Repository Structure (Reorganized Aug 23, 2025)**
+
+Professional organization for development and production:
+
+```
+sai-benchmark/
+├── 📚 benchmarks/          # All benchmark scripts by category
+│   ├── sainet/            # SAINet-specific benchmarks  
+│   ├── framework/         # Core benchmarking tools
+│   └── vision/            # General vision benchmarks
+├── 📊 results/            # Organized benchmark results
+│   ├── sainet/           # Results by benchmark category
+│   └── reports/          # Analysis reports  
+├── 🛠️ scripts/           # Utility scripts by function
+│   ├── training/         # Training utilities
+│   ├── setup/           # Environment setup
+│   └── data_preparation/ # Data handling
+├── 🧠 RNA/              # SAI Neural Network implementation
+├── 🏗️ src/             # Core framework source code
+├── 🧪 tests/           # Test suite
+├── ⚙️ config/          # Configuration files
+└── 📖 docs/            # Documentation
+```
+
 ### Quick Start with SAI RNA - Two-Stage Training
 
 #### Stage A: Detector Training (✅ COMPLETED)

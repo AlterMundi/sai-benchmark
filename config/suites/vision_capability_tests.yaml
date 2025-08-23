@@ -1,0 +1,56 @@
+name: "vision_capability_tests"
+description: "Comprehensive vision capability assessment using table-objects images with multiple resolutions to test object detection, counting, spatial relationships, color recognition, and resolution sensitivity"
+version: "1.0"
+
+# Test different vision capabilities with structured prompts
+prompts:
+  - "vision_object_detection"
+  - "vision_object_counting" 
+  - "vision_color_recognition"
+  - "vision_spatial_relationships"
+  - "vision_size_estimation"
+  - "vision_text_recognition"
+  - "vision_material_recognition"
+  - "vision_shape_analysis"
+  - "vision_comprehensive_analysis"
+  - "vision_resolution_comparison"
+
+# Test across available vision models
+models:
+  - "qwen2vl_2b"
+  - "qwen2vl_7b" 
+  - "llava_7b"
+  - "llava_13b"
+  - "minicpm_v2_6"
+
+# Dataset containing the three table-objects images
+datasets:
+  - "datasets/vision_table_objects.json"
+
+# Vision-specific metrics
+metrics:
+  - "object_detection_accuracy"
+  - "counting_accuracy" 
+  - "color_accuracy"
+  - "spatial_accuracy"
+  - "text_recognition_accuracy"
+  - "material_recognition_accuracy"
+  - "comprehensive_score"
+  - "resolution_consistency"
+  - "parse_success_rate"
+  - "latency"
+
+# Engine configuration optimized for vision tasks
+engine_config:
+  max_tokens: 1000
+  temperature: 0.1
+  top_p: 0.9
+  timeout_seconds: 60
+
+# Test configuration
+test_config:
+  parallel_execution: true
+  max_workers: 2
+  timeout_per_test: 120
+  retry_failed_tests: true
+  save_intermediate_results: true

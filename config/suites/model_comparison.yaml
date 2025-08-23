@@ -1,0 +1,43 @@
+name: "Model Comparison Benchmark"
+description: "Compare performance across different vision-language models for fire detection"
+version: "1.0"
+
+# Single prompt for fair comparison
+prompts:
+  - "early_fire_json"
+
+# Multiple models to compare (using available Ollama models)
+models:
+  - "qwen2.5vl:7b"
+  - "llama3.2-vision:latest"
+  - "minicpm-v:latest"
+  - "bakllava:latest"
+  - "llava-phi3:latest"
+
+# Available datasets
+datasets:
+  - "test_sequences"
+  - "images"
+
+# Core metrics for comparison
+metrics:
+  - "accuracy"
+  - "precision"
+  - "recall"
+  - "f1_score"
+  - "latency"
+  - "cost"
+  - "bbox_iou"
+  - "parse_success_rate"
+
+# Conservative engine settings
+engine_config:
+  timeout: 180
+  max_retries: 3
+  temperature: 0.0  # Deterministic for comparison
+
+# Test configuration
+test_config:
+  max_images_per_sequence: 3  # Faster execution
+  iou_threshold: 0.5
+  confidence_threshold: 0.7
